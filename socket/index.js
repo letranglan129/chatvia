@@ -1,7 +1,7 @@
 const handleUser = require('./handleUser')
 
 function handleSocket(io) {
-    io.sockets.on('connection', socket => {
+    io.on('connection', socket => {
         // User open app
         socket.on('joinApp', function (...args) {
             handleUser.joinApp(socket, io, ...args)

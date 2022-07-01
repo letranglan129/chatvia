@@ -13,6 +13,27 @@ const AddFriend = require('../models/AddFriend')
 // const ObjectId = require('mongoose').Types.ObjectId
 const Promise = require('bluebird')
 
+const getField = (field) => {
+    switch (field) {
+        case 'name':
+            return 'Tên người dùng'
+        case 'email':
+            return 'Email'
+        case 'password':
+            return 'Mật khẩu'
+        case 'repassword':
+            return 'Nhập lại mật khẩu'
+        default:
+            return "Trường này"
+    }
+}
+
+const addError = (errors, error) => {
+    const index = errors.findIndex((err) => err.field === error.field)
+    if (index === -1)
+        errors.push(error)
+}
+
 class UserController {
     // @route	[POST] /user/login
     // @desc	Login
@@ -29,23 +50,23 @@ class UserController {
 
         const result = await bcrypt.compare(passwordBody, user.password)
         if (!result) {
-            return res.json('Mật khẩu không chính xác')
+            return res.status(403).json('Mật khẩu không chính xác')
         }
 
-        const accessToken = await jwt.sign(
+        const accessToken = jwt.sign(
             { email: emailBody },
             process.env.ACCESS_SECRET_KEY,
             { expiresIn: '60s' }
         )
-        const refreshToken = await jwt.sign(
+        const refreshToken = jwt.sign(
             { email: emailBody },
             process.env.REFRESH_SECRET_KEY,
             { expiresIn: '60d' }
         )
 
         res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
             secure: true,
+            httpOnly: true,
             sameSite: 'strict',
         })
         const { password, ...userObj } = user._doc
@@ -58,36 +79,46 @@ class UserController {
     async createUser(req, res) {
         const userNew = req.body
         const data = await User.findOne({ email: userNew.email })
+        const errors = []
 
-        if (Object.keys(userNew).length) {
-            if (userNew.password.length < 6)
-                return res.json({
-                    field: 'password',
-                    msg: 'Mật khâu tối thiểu 6 kí tự!!!',
+        Object.keys(userNew).forEach((field) => {
+            if (!userNew[field].length)
+                addError(errors, {
+                    field,
+                    msg: `Vui lòng điền vào ${getField(field)}!!!`
                 })
-            if (userNew.password !== userNew.repassword)
-                return res.json({
-                    field: 'repassword',
-                    msg: 'Nhập lại mật khẩu không trùng khớp!!!',
-                })
-            if (!EMAIL_REG.test(userNew.email))
-                return res.json({
-                    field: 'email',
-                    msg: 'Định dạng email không chính xác!!!',
-                })
-        }
+        })
+
+
+        if (userNew.password.length < 6)
+            addError(errors, {
+                field: 'password',
+                msg: 'Mật khâu tối thiểu 6 kí tự!!!',
+            })
+        if (userNew.password !== userNew.repassword)
+            addError(errors, {
+                field: 'repassword',
+                msg: 'Nhập lại mật khẩu không trùng khớp!!!',
+            })
+        if (!EMAIL_REG.test(userNew.email))
+            addError(errors, {
+                field: 'email',
+                msg: 'Định dạng email không chính xác!!!',
+            })
 
         if (data) {
-            return res.json({ field: 'email', msg: 'Email đã tồn tại!!!' })
+            addError(errors, { field: 'email', msg: 'Email đã tồn tại!!!' })
         } else {
             const salt = await bcrypt.genSalt(10)
             const hashPass = await bcrypt.hash(userNew.password, salt)
 
             try {
+                if(errors.length)
+                    return res.json(errors)
                 await User.create({ ...userNew, password: hashPass })
                 return res.json(null)
             } catch (err) {
-                return res.json({ field: null, msg: 'Đã xảy ra lỗi!!!' })
+                addError(errors, { field: null, msg: 'Đã xảy ra lỗi!!!' })
             }
         }
     }
@@ -111,7 +142,7 @@ class UserController {
     async refreshToken(req, res) {
         const refreshTokenBody = req.cookies.refreshToken
         if (!refreshTokenBody) {
-            return res.status(401).json('Không tìm thấy refresh token!!!')
+            return res.json('Không tìm thấy refresh token!!!')
         }
 
         const verified = jwt.verify(
@@ -120,26 +151,26 @@ class UserController {
         )
 
         if (verified) {
-            const newAccessToken = await jwt.sign(
+            const newAccessToken = jwt.sign(
                 { email: verified.email },
                 process.env.ACCESS_SECRET_KEY,
                 { expiresIn: '60s' }
             )
-            const newRefreshToken = await jwt.sign(
+            const newRefreshToken = jwt.sign(
                 { email: verified.email },
                 process.env.REFRESH_SECRET_KEY,
                 { expiresIn: '60d' }
             )
 
             res.cookie('refreshToken', newRefreshToken, {
-                httpOnly: true,
-                secure: false,
+                httpOnly: process.env.NODE_ENV !== 'production',
+                secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
             })
 
             return res.json({ accessToken: newAccessToken })
         }
-        res.status(401).json(
+        res.json(
             'Refresh token không chính xác, vui lòng đăng nhập lại!!!'
         )
     }
