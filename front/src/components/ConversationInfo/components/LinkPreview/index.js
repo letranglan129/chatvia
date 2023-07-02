@@ -3,7 +3,7 @@ import React from 'react'
 import { useState } from 'react'
 import { usePopper } from 'react-popper'
 
-const LinkPreview = () => {
+const LinkPreview = ({ url }) => {
     const [isHover, setIsHover] = useState()
     const [popperElememt, setPopperElement] = useState()
     const [referenceElement, setReferenceElement] = useState()
@@ -26,19 +26,19 @@ const LinkPreview = () => {
             onMouseLeave={() => setIsHover(false)}
         >
             <Microlink
-                url="https://www.youtube.com/watch?v=-nyBBEFpkrk"
+                url={url}
                 size="small"
                 media={['image', 'logo']}
             />
             {isHover && (
-                <div className="absolute flex rounded-md bg-white top-1 right-6 z-20 p-[2px]">
+                <div className="absolute top-1 right-6 z-20 flex rounded-md bg-white p-[2px]">
                     <div>
-                        <button className="flex items-center justify-center w-5 h-6 hover:bg-gray-300 rounded-md">
+                        <button className="flex h-6 w-5 items-center justify-center rounded-md hover:bg-gray-300">
                             <ion-icon name="arrow-redo-outline"></ion-icon>
                         </button>
                     </div>
                     <div ref={setReferenceElement} className="parent ">
-                        <button className="flex items-center justify-center w-5 h-6 hover:bg-gray-300 rounded-md">
+                        <button className="flex h-6 w-5 items-center justify-center rounded-md hover:bg-gray-300">
                             <ion-icon name="ellipsis-vertical"></ion-icon>
                         </button>
 
@@ -46,27 +46,27 @@ const LinkPreview = () => {
                             ref={setPopperElement}
                             style={styles.popper}
                             {...attributes.popper}
-                            className="min-w-[150px] bg-white py-2 rounded-md children overflow-ellipsis shadow-lg"
+                            className="children min-w-[150px] overflow-ellipsis rounded-md bg-white py-2 shadow-lg"
                         >
-                            <li className="px-4 py-1 text-sm hover:bg-gray-200 line-clamp-1">
-                                <button className="w-full flex items-center">
-                                    <span className="flex mr-2 text-base">
+                            <li className="px-4 py-1 text-sm line-clamp-1 hover:bg-gray-200">
+                                <button className="flex w-full items-center">
+                                    <span className="mr-2 flex text-base">
                                         <ion-icon name="copy-outline"></ion-icon>
                                     </span>
                                     <span>Copy</span>
                                 </button>
                             </li>
-                            <li className="px-4 py-1 text-sm hover:bg-gray-200 line-clamp-1">
-                                <button className="w-full flex items-center">
-                                    <span className="flex mr-2 text-base">
+                            <li className="px-4 py-1 text-sm line-clamp-1 hover:bg-gray-200">
+                                <button className="flex w-full items-center">
+                                    <span className="mr-2 flex text-base">
                                         <ion-icon name="arrow-redo"></ion-icon>
                                     </span>
                                     <span>Chia sẻ</span>
                                 </button>
                             </li>
                             <li className="px-4 py-1 text-sm hover:bg-gray-200">
-                                <button className="w-full flex items-center">
-                                    <span className="flex mr-2 text-base">
+                                <button className="flex w-full items-center">
+                                    <span className="mr-2 flex text-base">
                                         <ion-icon name="earth-outline"></ion-icon>
                                     </span>
                                     <span className="whitespace-nowrap">
@@ -74,9 +74,9 @@ const LinkPreview = () => {
                                     </span>
                                 </button>
                             </li>
-                            <li className="px-4 py-1 text-sm hover:bg-gray-200 line-clamp-1">
-                                <button className="w-full flex items-center">
-                                    <span className="flex mr-2 text-base">
+                            <li className="px-4 py-1 text-sm line-clamp-1 hover:bg-gray-200">
+                                <button className="flex w-full items-center">
+                                    <span className="mr-2 flex text-base">
                                         <ion-icon name="trash-outline"></ion-icon>
                                     </span>
                                     <span>Xóa</span>

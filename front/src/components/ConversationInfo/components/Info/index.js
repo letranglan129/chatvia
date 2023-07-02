@@ -1,13 +1,16 @@
 import React from 'react'
 import Avatar from '../../../HomeComponent/Avatar'
 
-const Info = ({avatar, name, children}) => {
+const Info = ({ avatar, name, children }) => {
     return (
-        <div className="pt-4 flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center pt-4">
             <Avatar
-                className="!h-20 !w-20 mb-3"
+                className="mb-3 !h-20 !w-20"
                 isNoDot={true}
-                src={avatar}
+                user={{
+                    id: '',
+                    avatar,
+                }}
             />
             <h3 className="text-lg font-semibold dark:text-gray-100">{name}</h3>
             {children}

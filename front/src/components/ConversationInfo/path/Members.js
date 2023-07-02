@@ -6,6 +6,7 @@ import { UserResult } from '../../HomeComponent/SearchResult'
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
 import Search from '../../HomeComponent/Search'
+import DropdownUserContact from '../../HomeComponent/ContactTab/DropdownUserContact'
 
 const Members = () => {
     const { conversation } = useSelector((state) => state.currentChat)
@@ -19,14 +20,14 @@ const Members = () => {
         const getMembers = async () => {
             try {
                 const { data } = await axios.post(`/conversation/get-members`, {
-                    members: conversation.members,
+                    conversationId: conversation._id,
                 })
                 setMembers(data)
                 setResultSearch(data)
             } catch (error) {}
         }
         getMembers()
-    }, [])
+    }, [conversation])
 
     useEffect(() => {
         if (search) {
@@ -39,19 +40,19 @@ const Members = () => {
         if (!search) {
             setResultSearch(members)
         }
-    }, [search])
+    }, [search, conversation])
 
     const handleChangeSearch = useCallback((value) => setSearch(value), [])
 
     return (
         <>
-            <div className="absolute inset-0 z-0 bg-white"></div>
+            <div className="z-0 bg-white dark:bg-gray-600"></div>
             <div className="relative z-10 flex flex-1 flex-col bg-white dark:bg-gray-700">
                 <div>
                     <h4 className="px-4 pt-4 pb-2 text-sm font-semibold dark:text-gray-200">
                         Danh sách thành viên ({conversation.members.length})
                     </h4>
-                    <div className="mx-4 mb-2 overflow-hidden rounded-full">
+                    <div className="mx-3 mb-2 overflow-hidden rounded-full">
                         <Search
                             name="search-members"
                             id="search-members"
@@ -62,12 +63,13 @@ const Members = () => {
                     </div>
                 </div>
 
-                <SimpleBar style={{ flex: 1 }}>
-                    {resultSearch.map((member) => (
-                        <UserResult
-                            friend={member}
+                <SimpleBar style={{ flex: 1 }} className='px-3'>
+                    {resultSearch?.map((member, index) => (
+                        <DropdownUserContact
+                            admin={conversation.admin.own === member._id}
                             key={member._id}
-                            className="rounded-none"
+                            index={index + 1}
+                            friend={member}
                         />
                     ))}
                 </SimpleBar>

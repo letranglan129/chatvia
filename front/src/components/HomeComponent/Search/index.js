@@ -13,24 +13,25 @@ function Search({
 }) {
     const { register, handleSubmit, resetField, watch } = useForm()
     const searchKey = watch(name)
-	const debounce = useDebounce(searchKey, 200)
+    const debounce = useDebounce(searchKey, 300)
 
     useEffect(() => {
         onChange(debounce)
     }, [debounce])
 
     return (
-        <div className='input-text'>
+        <div className="input-text">
             <form onSubmit={handleSubmit(() => onSubmit(searchKey))}>
                 <label
                     htmlFor={id}
                     className={
-                        'overflow-hidden text-gray-800 dark:text-gray-200 flex items-stretch rounded-md w-full ' + className
+                        'flex w-full items-stretch overflow-hidden rounded-md text-gray-800 dark:text-gray-200 ' +
+                        className
                     }
                 >
                     <button
                         type="submit"
-                        className={`text-2xl flex items-center px-3 ${
+                        className={`flex items-center px-3 text-2xl ${
                             searchKey ? 'hover:bg-gray-600' : ''
                         }`}
                     >
@@ -41,16 +42,21 @@ function Search({
                         type="text"
                         id={id}
                         name={name}
-                        className="text-sm pl-2 pr-8 py-2 w-full outline-none"
+                        className="w-full py-2 pl-2 pr-8 text-sm outline-none"
                         placeholder={placeholder}
+                        onInput={(e) => {
+                            if (e.target.value === '') {
+                                onSubmit('')
+                            }
+                        }}
                     />
                     {searchKey && (
                         <button
                             type="reset"
-                            className="leading-0 px-2 flex items-center hover:bg-gray-600"
+                            className="flex items-center px-2 leading-0 hover:bg-gray-600"
                             onClick={() => {
                                 resetField(name)
-                                setResultSearch(null)	
+                                onSubmit('')
                             }}
                         >
                             <ion-icon name="close"></ion-icon>

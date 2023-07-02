@@ -44,6 +44,7 @@ function ChatOption({ own, idMessage, conversationId }) {
                 >
                     <div
                         onClick={async e => {
+                            console.log(idMessage)
                             dispatch(removeMessageById(idMessage))
 
                             await del(

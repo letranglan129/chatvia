@@ -18,31 +18,29 @@ function ProfileTab() {
 	const theme = useSelector(state => state.theme)
 
     return (
-        <div className={`tab-container ${theme.isHidden ? '' : 'maxWidth'}`} >
+        <div className={`tab-container ${theme.isHidden ? '' : 'maxWidth'}`}>
             <div className="mb-4">
                 <TitleTab>Thông tin của bạn</TitleTab>
             </div>
 
-            <div className="relative pb-5 text-center border-b dark:border-gray-600">
+            <div className="relative border-b pb-5 text-center dark:border-gray-600 ">
                 <div
                     className="relative inline-block"
                     onClick={() => setIsOpenModal(true)}
                 >
-                    <Avatar isNoDot={true}
-                        className="object-cover w-24 h-24 mx-auto mb-4 rounded-full"
-                        src={user.avatar}
+                    <Avatar
+                        isNoDot={true}
+                        className="mx-auto h-24 w-24 rounded-full object-cover"
+                        user={user}
                         alt=""
                     />
+                    <label className="absolute top-3/4 left-2/3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 bg-white leading-0 dark:border-gray-700 dark:bg-gray-100 dark:text-white">
+                        <ion-icon name="create-outline"></ion-icon>
+                    </label>
                 </div>
-                <p className="font-medium text-gray-700 line-clamp-1 dark:text-gray-200">
+                <p className="mt-4 font-medium  text-gray-700  line-clamp-1 dark:text-gray-200">
                     {user.name}
                 </p>
-                <div>
-                    <span className="inline-block w-3 h-3 mr-2 border-4 border-green-500 rounded-full"></span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                        Active
-                    </span>
-                </div>
             </div>
 
             <div className="my-5">
@@ -56,14 +54,15 @@ function ProfileTab() {
             <SimpleBar style={{ height: '200px', flex: '1' }}>
                 <Collapse>
                     <div className="mb-3">
-                        <HeaderCollapse
-                            contentFor="1"
-                        >
+                        <HeaderCollapse contentFor="1">
                             Thông tin
                         </HeaderCollapse>
 
                         <CollapseContent id="1">
-                            <CollapseListItem title="Tên" content="Lê Trạng Lân" />
+                            <CollapseListItem
+                                title="Tên"
+                                content="Lê Trạng Lân"
+                            />
                             <CollapseListItem
                                 title="Email"
                                 content="letranglan129@gmail.com"
@@ -79,9 +78,7 @@ function ProfileTab() {
                         </CollapseContent>
                     </div>
                     <div className="mb-3">
-                        <HeaderCollapse
-                            contentFor="2"
-                        >
+                        <HeaderCollapse contentFor="2">
                             File đã gửi
                         </HeaderCollapse>
 

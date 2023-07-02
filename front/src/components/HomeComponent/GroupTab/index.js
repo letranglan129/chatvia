@@ -13,6 +13,7 @@ function GroupTab() {
     const [resultSearch, setResultSearch] = useState()
     const searchResultDialog = useSelector(state => state.searchResultDialog)
     const theme = useSelector(state => state.theme)
+    const [searchKey, setSearchKey] = useState('')
     const dispatch = useDispatch()
     const axios = createAxios()
 
@@ -22,24 +23,16 @@ function GroupTab() {
 
     // Submit form
     const onSubmit = async searchKey => {
-        if (!searchKey) {
-            setResultSearch(null)
-            dispatch(toggleSearchResult(false))
-            return
-        }
-
-        const res = await axios.post('/user/search', { query: searchKey })
-        setResultSearch(res.data?.user)
-        dispatch(toggleSearchResult(true))
+        setSearchKey(searchKey)
     }
 
     return (
         <div className={`tab-container ${theme.isHidden ? '' : 'maxWidth'}`}>
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex items-center justify-between">
                 <TitleTab> Nhóm </TitleTab>
                 <Button
                     primary={true}
-                    className="!p-1 text-sm bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg"
+                    className="rounded-lg bg-gray-200 !p-1 text-sm text-gray-800 dark:bg-gray-600 dark:text-gray-200"
                     title="Tạo nhóm mới"
                     onClick={openCreateDialog}
                     leftIcon={<ion-icon name="add-outline"></ion-icon>}
@@ -55,10 +48,10 @@ function GroupTab() {
                 setResultSearch={setResultSearch}
                 onSubmit={onSubmit}
             />
-            {resultSearch && searchResultDialog ? (
-                <SearchResultUser results={[resultSearch, setResultSearch]} />
+            {searchKey ? (
+                <GroupItemList keyword={searchKey} />
             ) : (
-                <GroupItemList arrGr={[]} />
+                <GroupItemList />
             )}
         </div>
     )

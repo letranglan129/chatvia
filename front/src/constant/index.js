@@ -21,11 +21,15 @@ export const SWIPER_PARAMS = {
 }
 export const EMAIL_REG =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+export const URI_REG = /https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
 export const MIN_LENGTH_PASSWORD = 6
 export const STORE_NAME_INDEXEDDB = 'conversation'
 export const STORE_NEW_MESSAGE_INDEXEDDB = 'list'
 export const NAME_NEW_MESSAGE_INDEXEDDB = 'NewMessageList'
 export const APP_API_URL = 'https://chatvia-be.vercel.app/'
+export const LIMIT_IMAGE_SHOW = 8
+export const LIMIT_FILE_SHOW = 4
+export const LIMIT_LINK_SHOW = 4
 export const SOCKET_CONFIG = {
     transports: ['websocket', 'polling', 'flashsocket'],
 }

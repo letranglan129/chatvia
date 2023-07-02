@@ -11,11 +11,13 @@ import Dialog from '../../Dialog'
 import ListFriendChooses from '../../ListFriendChooses'
 import Tabs from '../../Tab'
 import Avatar from '../Avatar'
+import { memo } from 'react'
+import { debounce } from 'lodash'
 
-export default function DialogCreateGroup() {
+function DialogCreateGroup() {
     const dispatch = useDispatch()
-    const friendList = useSelector(state => state.friend.list)
-    const createGroupDialog = useSelector(state => state.createGroupDialog)
+    const friendList = useSelector((state) => state.friend.list)
+    const createGroupDialog = useSelector((state) => state.createGroupDialog)
     const [search, setSearch] = useState(null)
     const [resultSearch, setResultSearch] = useState()
     const [chooses, setChooses] = useState([])
@@ -24,15 +26,16 @@ export default function DialogCreateGroup() {
     const [previewAvatarGroup, setPreviewAvatarGroup] = useState({
         previewURL: '',
     })
+    const [loading, setLoading] = useState(false)
     const [listPreviewUpload, setListPreviewUpload] = useState([])
     const [isOpenAvatarDialog, setIsOpenAvatarDialog] = useState(false)
     const avatarGroupData = useRef(AVATAR_GROUP_JSON.avatarGroup)
-    const { user } = useSelector(state => state.auth.currentUser)
+    const { user } = useSelector((state) => state.auth.currentUser)
 
     useEffect(() => {
         if (search) {
             setResultSearch(
-                friendList.filter(friend =>
+                friendList.filter((friend) =>
                     friend.name.toLowerCase().includes(search.toLowerCase())
                 )
             )
@@ -42,23 +45,19 @@ export default function DialogCreateGroup() {
         }
     }, [search])
 
-    const handleChoose = useCallback(
-        friendId => {
-            const index = friendList.findIndex(item => item._id === friendId)
-            const isExist =
-                chooses.findIndex(item => item._id === friendId) !== -1
-            if (isExist)
-                setChooses(chooses.filter(item => item._id !== friendId))
-            else setChooses([...chooses, friendList[index]])
-        },
-        [friendList, chooses]
-    )
+    const handleChoose = (friendId) => {
+        const index = friendList.findIndex((item) => item._id === friendId)
+        const isExist =
+            chooses.findIndex((item) => item._id === friendId) !== -1
+        if (isExist) setChooses(chooses.filter((item) => item._id !== friendId))
+        else setChooses([...chooses, friendList[index]])
+    }
 
-    const toggleDialog = useCallback(() => {
+    const toggleDialog = () => {
         dispatch(toggleCreateGroup())
-    }, [])
+    }
 
-    const handleChangeImage = async e => {
+    const handleChangeImage = async (e) => {
         const imageFile = e.target.files[0]
         var linkAvatar = URL.createObjectURL(imageFile)
 
@@ -67,40 +66,33 @@ export default function DialogCreateGroup() {
             isUpload: true,
             file: imageFile,
         })
-        setListPreviewUpload(prev => [...prev, linkAvatar])
+        setListPreviewUpload((prev) => [...prev, linkAvatar])
 
         e.target.value = ''
     }
 
-    const handleChooseAvatarPreview = useCallback(
-        e =>
-            setPreviewAvatarGroup({
-                previewURL: e.target.src,
-                isUpload: false,
-            }),
-        []
-    )
+    const handleChooseAvatarPreview = (e) =>
+        setPreviewAvatarGroup({
+            previewURL: e.target.src,
+            isUpload: false,
+        })
 
-    const handleChangeSearch = useCallback(value => setSearch(value), [])
-    const handleChangeName = e => setName(e.target.value)
+    const handleChangeSearch = (value) => setSearch(value)
 
-    const handleOpenAvatarDialog = useCallback(
-        () => setIsOpenAvatarDialog(true),
-        []
-    )
+    const handleOpenAvatarDialog = () => setIsOpenAvatarDialog(true)
 
-    const closeChooseAvatarDialog = useCallback(() => {
+    const closeChooseAvatarDialog = () => {
         setIsOpenAvatarDialog(false)
         setPreviewAvatarGroup({
             previewURL: '',
             isUpload: false,
         })
         setListPreviewUpload([])
-    }, [])
+    }
 
     const handleConfirmAvatar = () => {
         setAvatarGroup(previewAvatarGroup)
-        listPreviewUpload.forEach(image => {
+        listPreviewUpload.forEach((image) => {
             if (image !== previewAvatarGroup.previewURL)
                 URL.revokeObjectURL(image)
         })
@@ -109,6 +101,7 @@ export default function DialogCreateGroup() {
     }
 
     const handleConfirmCreateGroup = async () => {
+        setLoading(true)
         let imageUpload
         try {
             if (avatarGroup.hasOwnProperty('file')) {
@@ -122,16 +115,28 @@ export default function DialogCreateGroup() {
             if (chooses.length < 2)
                 toast.error('Vui lòng chọn tối thiểu 2 người bạn!!!')
 
-            socket.emit('create-group', {
-                name,
-                members: [user._id, ...chooses.map(friend => friend._id)],
-                type: CONVERSATION_TYPE.group,
-                avatar: imageUpload,
-                creator: user._id,
-                admin: {
-                    own: user._id,
+            socket.emit(
+                'createGroup',
+                {
+                    name,
+                    members: [user._id, ...chooses.map((friend) => friend._id)],
+                    type: CONVERSATION_TYPE.group,
+                    avatar: imageUpload,
+                    creator: user._id,
+                    admin: {
+                        own: user._id,
+                    },
                 },
-            })
+                (response) => {
+                    if (response) {
+                        toast.success('Tạo nhóm thành công!!!')
+                    } else {
+                        toast.error('Đã xảy ra lỗi!!!')
+                    }
+                    setLoading(false)
+                    toggleDialog()
+                }
+            )
         } catch (error) {}
     }
 
@@ -146,31 +151,37 @@ export default function DialogCreateGroup() {
                     <Dialog.Header handleClose={toggleDialog}>
                         Tạo nhóm
                     </Dialog.Header>
-                    <div className="flex p-3 items-center">
+                    <div className="flex items-center p-3">
                         <div
                             onClick={handleOpenAvatarDialog}
-                            className="flex items-center justify-center text-2xl w-12 h-12 border rounded-full"
+                            className="flex h-12 w-12 items-center justify-center rounded-full border text-2xl"
                         >
                             <ion-icon name="camera"></ion-icon>
                             <Avatar
-                                src={avatarGroup?.previewURL}
+                                user={{
+                                    id: '',
+                                    avatar: avatarGroup?.previewURL,
+                                }}
                                 isNoDot={true}
-                                className={`w-12 h-12 flex-shrink-0 ${
+                                className={`h-12 w-12 flex-shrink-0 ${
                                     !avatarGroup?.previewURL ? 'hidden' : ''
                                 }`}
                             />
                         </div>
                         <input
                             type="text"
-                            className="flex-1 py-2 ml-2 text-sm border-b bg-transparent focus:border-b-purple-700 outline-none"
+                            className="ml-2 flex-1 border-b bg-transparent py-2 text-sm outline-none focus:border-b-purple-700"
                             placeholder="Nhập tên nhóm..."
                             name="name"
-                            onChange={handleChangeName}
+                            onChange={debounce(
+                                (e) => setName(e.target.value),
+                                300
+                            )}
                         />
                     </div>
 
-                    <div className="flex flex-col flex-1 p-3 pt-0">
-                        <p className="text-13 mb-1">
+                    <div className="flex flex-1 flex-col p-3 pt-0">
+                        <p className="mb-1 text-13">
                             Thêm bạn bè vào nhóm (tối thiểu 2 người bạn)
                         </p>
                         <Dialog.Search
@@ -191,23 +202,27 @@ export default function DialogCreateGroup() {
                     </div>
 
                     <div className="w-full">
-                        <div className="p-3 text-right select-none">
+                        <div className="select-none p-3 text-right">
                             <Button
-                                className="text-center bg-gray-50 bg-opacity-70 text-black active:bg-purple-600 font-semibold text-sm !min-w-0 !px-4 !py-2 !rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+                                className="mr-1 !min-w-0 !rounded bg-gray-50 bg-opacity-70 !px-4 !py-2 text-center text-sm font-semibold text-black shadow outline-none transition-all duration-150 ease-linear hover:shadow-md focus:outline-none active:bg-purple-600"
                                 type="button"
+                                disabled={loading}
                                 onClick={toggleDialog}
                             >
                                 Hủy
                             </Button>
                             <Button
-                                className="min-w-0 !px-4 !py-2 text-sm font-semibold text-center text-white transition-all duration-150 ease-linear bg-purple-500 !rounded shadow outline-none active:bg-purple-600 hover:shadow-md focus:outline-none"
+                                className="min-w-0 !rounded bg-purple-500 !px-4 !py-2 text-center text-sm font-semibold text-white shadow outline-none transition-all duration-150 ease-linear hover:shadow-md focus:outline-none active:bg-purple-600"
                                 type="button"
                                 disabled={
-                                    !avatarGroup || !name || chooses.length < 2
+                                    !avatarGroup ||
+                                    !name ||
+                                    chooses.length < 2 ||
+                                    loading
                                 }
                                 onClick={handleConfirmCreateGroup}
                             >
-                                Tạo nhóm
+                                {loading ? 'Đang tạo...' : 'Tạo nhóm'}
                             </Button>
                         </div>
                     </div>
@@ -220,10 +235,10 @@ export default function DialogCreateGroup() {
             >
                 <Tabs containerClassName="tabs avatar-group">
                     <div label="Chọn ảnh có sẵn">
-                        <div className="p-4 pb-0 h-[300px] overflow-y-auto">
+                        <div className="h-[300px] overflow-y-auto p-4 pb-0">
                             {avatarGroupData.current.map((elemenet, index) => (
                                 <div className="mb-4 last:mb-0" key={index}>
-                                    <h2 className="text-sm font-medium mb-1">
+                                    <h2 className="mb-1 text-sm font-medium">
                                         {elemenet.title}
                                     </h2>
                                     <div className="avatar-group-available-list">
@@ -239,8 +254,11 @@ export default function DialogCreateGroup() {
                                             >
                                                 <Avatar
                                                     isNoDot={true}
-                                                    className="w-14 h-14"
-                                                    src={img}
+                                                    className="h-14 w-14"
+                                                    user={{
+                                                        id: '',
+                                                        avatar: img,
+                                                    }}
                                                     onClick={
                                                         handleChooseAvatarPreview
                                                     }
@@ -254,12 +272,12 @@ export default function DialogCreateGroup() {
                         </div>
                     </div>
                     <div label="Upload từ máy">
-                        <div className="p-4 pb-0 h-[300px] overflow-y-auto">
-                            <h2 className="text-sm font-medium mb-1">
+                        <div className="h-[300px] overflow-y-auto p-4 pb-0">
+                            <h2 className="mb-1 text-sm font-medium">
                                 Ảnh từ máy tính
                             </h2>
                             <div className="avatar-group-available-list">
-                                <label className="w-14 h-14 bg-blue-600 inline-flex items-center justify-center rounded-full text-2xl text-white">
+                                <label className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl text-white">
                                     <ion-icon name="add-outline"></ion-icon>
                                     <input
                                         type="file"
@@ -280,8 +298,11 @@ export default function DialogCreateGroup() {
                                     >
                                         <Avatar
                                             isNoDot={true}
-                                            className="w-14 h-14"
-                                            src={image}
+                                            className="h-14 w-14"
+                                            user={{
+                                                id: '',
+                                                avatar: image,
+                                            }}
                                             onClick={handleChooseAvatarPreview}
                                             alt=""
                                         />
@@ -291,10 +312,10 @@ export default function DialogCreateGroup() {
                         </div>
                     </div>
                     <div alwayShow={true}>
-                        <div className="m-4 relative">
+                        <div className="relative m-4">
                             <img
                                 src={previewAvatarGroup.previewURL}
-                                className={`w-full rounded-full aspect-square object-cover ${
+                                className={`aspect-square w-full rounded-full object-cover ${
                                     previewAvatarGroup.previewURL
                                         ? ''
                                         : 'invisible'
@@ -306,16 +327,16 @@ export default function DialogCreateGroup() {
                 </Tabs>
 
                 <div className="w-full border-t dark:border-slate-600">
-                    <div className="p-3 text-right select-none">
+                    <div className="select-none p-3 text-right">
                         <Button
-                            className="text-center bg-gray-50 bg-opacity-70 text-black active:bg-purple-600 font-semibold text-sm !min-w-0 !px-4 !py-2 !rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+                            className="mr-1 !min-w-0 !rounded bg-gray-50 bg-opacity-70 !px-4 !py-2 text-center text-sm font-semibold text-black shadow outline-none transition-all duration-150 ease-linear hover:shadow-md focus:outline-none active:bg-purple-600"
                             type="button"
                             onClick={closeChooseAvatarDialog}
                         >
                             Hủy
                         </Button>
                         <Button
-                            className="min-w-0 !px-4 !py-2 text-sm font-semibold text-center text-white transition-all duration-150 ease-linear bg-purple-500 !rounded shadow outline-none active:bg-purple-600 hover:shadow-md focus:outline-none"
+                            className="min-w-0 !rounded bg-purple-500 !px-4 !py-2 text-center text-sm font-semibold text-white shadow outline-none transition-all duration-150 ease-linear hover:shadow-md focus:outline-none active:bg-purple-600"
                             type="button"
                             disabled={!previewAvatarGroup}
                             onClick={handleConfirmAvatar}
@@ -328,3 +349,4 @@ export default function DialogCreateGroup() {
         </>
     )
 }
+export default memo(DialogCreateGroup)

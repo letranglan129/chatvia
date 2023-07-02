@@ -52,11 +52,11 @@ function Message({ messInfo, own, type }) {
             }, {})
 
             socket.emit(
-                'set-message-emoji',
+                'setMessageEmoji',
                 {
                     _id: messInfo._id,
                     emoji: newEmojiList,
-                    room: messInfo.conversationId
+                    room: messInfo.conversationId,
                 },
                 async ({ status, message }) => {
                     await set(
@@ -67,7 +67,7 @@ function Message({ messInfo, own, type }) {
                     )
                 }
             )
-			
+
             return newEmojiList
         })
     }, [])
@@ -78,19 +78,29 @@ function Message({ messInfo, own, type }) {
                 className="flex-1 px-4 pb-2"
                 onMouseEnter={() => setHover(true)}
                 onMouseLeave={() => setHover(false)}
+                onClick={() => setHover(true)}
+                onTouchStart={() => setHover(true)}
+                onTouchCancel={() => setHover(false)}
+                onTouchEnd={() => setHover(false)}
             >
                 <div
-                    className={`flex ${own ? 'justify-end' : 'justify-start'}`}
+                    className={`flex flex-nowrap ${
+                        own
+                            ? 'flex-wrap-reverse justify-end'
+                            : 'flex-wrap justify-start'
+                    }`}
                 >
                     <div
-                        className={`relative h-max ${
+                        className={`relative mb-3 h-max min-w-[40px] ${
                             own ? 'order-2 ml-3' : 'mr-3'
                         }`}
                     >
                         <Avatar
                             isNoDot={true}
-                            src={messInfo.avatar}
-                            className={`h-10 w-10 rounded-full`}
+                            user={messInfo.senderId}
+                            className={`h-10 w-10 rounded-full ${
+                                formatTime() ? '' : 'hidden'
+                            }`}
                             alt=""
                         />
                         {conversation?.creator?._id === messInfo.senderId && (
@@ -99,10 +109,15 @@ function Message({ messInfo, own, type }) {
                             </span>
                         )}
                     </div>
-                    <div className="order-1 flex items-center justify-start">
+                    <div
+                        className={` order-1 flex items-center justify-start overflow-hidden`}
+                        style={{
+                            width: `${type === 'link' ? '240px' : 'auto'}`,
+                        }}
+                    >
                         <div
-                            className={`w-full rounded-xl bg-slate-100 p-2 text-black shadow-lg dark:bg-gray-600 dark:text-gray-50 sm:p-2 ${
-                                own ? 'order-1' : ''
+                            className={` max-w-full rounded-xl bg-slate-100 p-2 text-black shadow-lg dark:bg-gray-600 dark:text-gray-50 sm:p-2 ${
+                                own ? 'order-1 ml-auto' : ''
                             }`}
                         >
                             {conversation?.type !==
@@ -111,9 +126,7 @@ function Message({ messInfo, own, type }) {
                                     {messInfo?.name}
                                 </p>
                             )}
-                            <span className="my-3">
-                                <TypeMessage type={type} messInfo={messInfo} />
-                            </span>
+                            <TypeMessage type={type} messInfo={messInfo} />
                             <div className="flex flex-wrap items-center justify-end">
                                 <div className="text-right text-xs text-gray-500 dark:text-gray-300">
                                     {Object.keys(emoji).length !== 0 && (

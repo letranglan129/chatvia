@@ -239,11 +239,11 @@ input[type='checkbox']:checked::before {
 }
 
 .profile-modal-overlay {
-    @apply fixed top-0 left-0 z-[9999] h-full w-full bg-black bg-opacity-50;
+    @apply fixed top-0 left-0 z-[51] h-full w-full bg-black bg-opacity-50;
 }
 
 .profile-modal-content {
-    @apply fixed top-1/2 left-1/2 z-[9999] w-full max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-[5px];
+    @apply fixed top-1/2 left-1/2 z-[51] w-full max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-[5px];
 }
 
 .profile-modal-content {
@@ -620,11 +620,11 @@ input:read-only {
 
 /* TAB */
 .tab-container {
-    @apply relative flex min-h-[500px] max-w-full flex-1 flex-col bg-[#f5f7fb] px-[14px] pt-[14px];
+    @apply relative flex min-h-[500px] max-w-full flex-col bg-[#f5f7fb] px-[14px] pt-[14px];
 }
 
 .tab-container.maxWidth {
-    @apply max-w-[380px];
+    @apply min-w-[380px] flex-shrink-0 flex-grow-0 basis-0;
 }
 
 @media (max-width: 900px) {
@@ -731,7 +731,7 @@ input:read-only {
     flex: 1;
     transition: 0.3s;
     background: #fdfffc;
-    transition: all 0.3s linear;
+    transition: transform 0.3s linear;
 }
 
 @media (max-width: 900px) {
@@ -887,5 +887,9 @@ input:read-only {
 
 /* CONVERSATION INFO */
 .conversation-info {
-    @apply fixed top-0 right-0 bottom-0 z-50 flex h-full w-[340px] flex-shrink-0 flex-col overflow-y-auto border-l border-gray-300 bg-slate-500 dark:border-gray-500 xl:relative;
+    @apply fixed top-0 right-0 bottom-0 z-50 flex h-full w-[340px] flex-shrink-0 flex-col overflow-y-auto border-l border-gray-300 bg-white dark:bg-gray-700 dark:border-gray-500 xl:relative;
+}
+
+.transition-grid-template-rows {
+    transition: grid-template-rows 300ms;
 }

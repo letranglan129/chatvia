@@ -2,13 +2,17 @@ import Avatar from '../Avatar'
 
 function ForwardCheckedItem({ avatar, name, onClick = () => {} }) {
     return (
-        <div className="flex items-center rounded-full w-full bg-blue-200 p-1 mb-2 select-none">
-            <Avatar isNoDot={true} className="w-6 h-6 rounded-full mr-2" src={avatar} />
-            <span className="text-sm font-normal flex-1 text-blue-700 line-clamp-1">
+        <div className="mb-2 flex w-full select-none items-center rounded-full bg-blue-200 p-1">
+            <Avatar
+                user={{ id: '', avatar }}
+                isNoDot={true}
+                className="mr-2 h-6 w-6 rounded-full"
+            />
+            <span className="flex-1 text-sm font-normal text-blue-700 line-clamp-1">
                 {name}
             </span>
             <span
-                className="ml-auto text-2xl flex text-blue-700 cursor-pointer"
+                className="ml-auto flex cursor-pointer text-2xl text-blue-700"
                 onClick={onClick}
             >
                 <ion-icon name="close-circle"></ion-icon>

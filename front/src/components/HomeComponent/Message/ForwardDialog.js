@@ -57,8 +57,7 @@ function ForwardDialog() {
             })
         })
         handleClose()
-        toast.success('Chuyển tiếp tin nhắn thành công!!!')
-    }, [])
+    }, [chooses])
 
     const handleChangeSearch = useCallback((value) => setSearch(value), [])
 

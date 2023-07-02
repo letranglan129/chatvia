@@ -15,7 +15,7 @@ function HeaderCollapse({ contentFor, children, className }) {
             className={`text-sm cursor-pointer text-gray-800 select-none font-medium bg-gray-200 hover:bg-gray-300 hover:bg-opacity-50 dark:text-gray-200 flex justify-between items-center py-3 px-5 ${
                 open.includes(contentFor)
                     ? 'rounded-t-lg'
-                    : 'rounded-lg delay-300 '
+                    : 'rounded-lg '
             } ${className}`}
         >
             <input

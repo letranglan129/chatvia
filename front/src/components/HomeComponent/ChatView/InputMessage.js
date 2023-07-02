@@ -54,7 +54,7 @@ function InputMessage({ setLoadingMessages }) {
     // Emoji picker
     useEffect(() => {
         if (chosenEmoji) {
-            editMess.current.innerHTML += `<img class="emoji-icon" src='https://projectertest.000webhostapp.com/emoji/${chosenEmoji.unified}.png' onError="this.onError=null;console.clear();this.src='https://twemoji.maxcdn.com/2/72x72/${chosenEmoji.unified}.png'"> `
+            editMess.current.innerHTML += chosenEmoji.emoji
         }
         editMess.current?.focus()
     }, [chosenEmoji])
@@ -133,7 +133,7 @@ function InputMessage({ setLoadingMessages }) {
             <div className="flex items-center flex-wrap">
                 <div className="flex-1 order-2 md:order-1">
                     <ContentEditable
-                        className="editable outline-none rounded-xl break-all p-3 cursor-text bg-gray-500 bg-opacity-25 border-gray-200 text-black dark:text-gray-100"
+                        className="editable outline-none rounded-xl p-3 cursor-text bg-gray-500 bg-opacity-25 border-gray-200 text-black dark:text-gray-100"
                         style={{
                             overflow: 'auto',
                             minHeight: '24px',

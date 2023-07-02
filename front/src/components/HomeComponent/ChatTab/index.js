@@ -10,21 +10,15 @@ import ChatSlider from './ChatSlider'
 
 function ChatTab() {
     const [resultSearch, setResultSearch] = useState()
-    const searchResult = useSelector(state => state.searchResultDialog)
-    const theme = useSelector(state => state.theme)
+    const searchResult = useSelector((state) => state.searchResultDialog)
+    const { conversation } = useSelector((state) => state.conversation)
+    const theme = useSelector((state) => state.theme)
     const dispatch = useDispatch()
+    const [searchKey, setSearchKey] = useState('')
     const axios = createAxios()
 
-    const onSubmit = async searchKey => {
-        if (!searchKey) {
-            setResultSearch(null)
-            dispatch(toggleSearchResult(false))
-            return
-        }
-
-        const res = await axios.post('/user/search', { query: searchKey })
-        setResultSearch(res.data?.user)
-        dispatch(toggleSearchResult(true))
+    const onSubmit = async (searchKey) => {
+        setSearchKey(searchKey)
     }
 
     return (
@@ -41,15 +35,23 @@ function ChatTab() {
                 setResultSearch={setResultSearch}
                 onSubmit={onSubmit}
             />
-
-            {resultSearch && searchResult ? (
-                <SearchResultUser results={[resultSearch, setResultSearch]} />
-            ) : (
+            {searchKey ? (
                 <>
-                    <div className="overflow-hidden mb-2">
+                    <div className="mb-2 overflow-hidden">
                         <ChatSlider />
                     </div>
-                    <h4 className="font-bold mb-2 md:mb-4 text-gray-800 dark:text-gray-200">
+                    <h4 className="mb-2 font-bold text-gray-800 dark:text-gray-200 md:mb-4">
+                        Kết quả tìm kiếm: {searchKey}
+                    </h4>
+
+                    <ChatItemList keyword={searchKey} />
+                </>
+            ) : (
+                <>
+                    <div className="mb-2 overflow-hidden">
+                        <ChatSlider />
+                    </div>
+                    <h4 className="mb-2 font-bold text-gray-800 dark:text-gray-200 md:mb-4">
                         Gần đây
                     </h4>
                     <ChatItemList />

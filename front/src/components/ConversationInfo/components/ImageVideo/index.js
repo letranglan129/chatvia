@@ -2,7 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import { usePopper } from 'react-popper'
 
-const ImageVideo = ({ src }) => {
+const ImageVideo = ({ src, onClick }) => {
     const [isHover, setIsHover] = useState(false)
     const [popperElememt, setPopperElement] = useState()
     const [referenceElement, setReferenceElement] = useState()
@@ -20,19 +20,20 @@ const ImageVideo = ({ src }) => {
 
     return (
         <div
-            className="relative w-[72px] h-[72px] rounded-md border border-gray-400 dark:border-gray-400"
+            className="relative h-[72px] w-[72px] rounded-md"
             onMouseEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
+            onClick={onClick}
         >
             {isHover && (
-                <div className="absolute inset-0 bg-black opacity-40 z-10 cursor-pointer"></div>
+                <div className="absolute inset-0 z-10 cursor-pointer rounded-md bg-black opacity-40"></div>
             )}
             {isHover && (
                 <div
                     ref={setReferenceElement}
-                    className="parent absolute rounded-md bg-white top-1 right-1 z-20 p-[2px]"
+                    className="parent absolute top-1 right-1 z-20 rounded-md bg-white p-[2px]"
                 >
-                    <button className="flex items-center justify-center w-5 h-6 hover:bg-gray-300 rounded-md">
+                    <button className="flex h-6 w-5 items-center justify-center rounded-md hover:bg-gray-300">
                         <ion-icon name="ellipsis-vertical"></ion-icon>
                     </button>
 
@@ -40,11 +41,11 @@ const ImageVideo = ({ src }) => {
                         ref={setPopperElement}
                         style={styles.popper}
                         {...attributes.popper}
-                        className="min-w-[150px] bg-white py-2 rounded-md children"
+                        className="children min-w-[150px] rounded-md bg-white py-2"
                     >
                         <li className="px-4 py-1 text-sm hover:bg-gray-200">
                             <button className="flex items-center justify-center">
-                                <span className="flex mr-2 text-base">
+                                <span className="mr-2 flex text-base">
                                     <ion-icon name="arrow-redo"></ion-icon>
                                 </span>
                                 <span>Chia sẻ</span>
@@ -52,8 +53,8 @@ const ImageVideo = ({ src }) => {
                         </li>
                         <li className="px-4 py-1 text-sm hover:bg-gray-200">
                             <button className="flex items-center justify-center">
-                                <span className="flex mr-2 text-base">
-                                <ion-icon name="download"></ion-icon>
+                                <span className="mr-2 flex text-base">
+                                    <ion-icon name="download"></ion-icon>
                                 </span>
                                 <span>Tải xuống</span>
                             </button>
@@ -61,7 +62,11 @@ const ImageVideo = ({ src }) => {
                     </ul>
                 </div>
             )}
-            <img className="object-cover rounded-md" src={src} alt="" />
+            <img
+                className="h-[72px] w-[72px] rounded-md object-cover"
+                src={src}
+                alt=""
+            />
         </div>
     )
 }

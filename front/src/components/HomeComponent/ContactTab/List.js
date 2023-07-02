@@ -8,7 +8,7 @@ import DropdownUserContact from './DropdownUserContact'
 export default function List() {
     const dispatch = useDispatch()
     const simpleBar = useRef()
-    const friends = useSelector(state => state.friend.list)
+    const friends = useSelector((state) => state.friend.list)
 
     // Turn off dialog call when scroll
     useEffect(() => {
@@ -25,11 +25,7 @@ export default function List() {
                 style={{ height: '200px', flex: '1' }}
                 scrollableNodeProps={{ ref: simpleBar }}
             >
-                <div className="px-3">
-                    <div className="font-semibold text-lg dark:text-indigo-500 mb-5">
-                        A
-                    </div>
-
+                <div className="">
                     {friends.map((friend, index) => (
                         <DropdownUserContact
                             key={index}

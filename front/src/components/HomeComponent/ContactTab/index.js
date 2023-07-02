@@ -33,9 +33,6 @@ function ContactTab() {
         <div className={`tab-container ${theme.isHidden ? '' : 'maxWidth'}`}>
             <div className="flex items-center justify-between mb-4">
                 <TitleTab>Danh bạ</TitleTab>
-                <Button circle={true} primary={true} className="!w-8 !h-8">
-                    <ion-icon name="person-add-outline"></ion-icon>
-                </Button>
             </div>
             <Search
                 className="mb-5"

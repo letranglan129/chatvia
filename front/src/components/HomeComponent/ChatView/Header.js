@@ -8,11 +8,12 @@ import { removeAllMessage } from '../../../redux/slice/messageSlice'
 import { updateToggleMess } from '../../../redux/slice/viewMessageSlice'
 import Button from '../../Button'
 import Avatar from '../Avatar'
+import { toast } from 'react-toastify'
 
 function Header() {
     const dispatch = useDispatch()
-    const { conversation } = useSelector(state => state.currentChat)
-    const theme = useSelector(state => state.theme)
+    const { conversation } = useSelector((state) => state.currentChat)
+    const theme = useSelector((state) => state.theme)
 
     const handleReturn = useCallback(() => {
         dispatch(removeAllMessage())
@@ -21,15 +22,13 @@ function Header() {
     }, [])
 
     const handleCallAudioClick = useCallback(() => {
-        dispatch(
-            toggleCall({ isShow: true, type: 'audio' })
-        )
+        toast.success("Đang cập nhật")
+        // dispatch(toggleCall({ isShow: true, type: 'audio' }))
     }, [])
 
     const handleCallVideoClick = useCallback(() => {
-        dispatch(
-            toggleCall({ isShow: true, type: 'video' })
-        )
+        toast.success("Đang cập nhật")
+        // dispatch(toggleCall({ isShow: true, type: 'video' }))
     }, [])
 
     const handleEllipsisClick = useCallback(() => {
@@ -37,24 +36,29 @@ function Header() {
     }, [])
 
     return (
-        <div className="h-16 w-full flex items-center justify-between p-2 border-b border-gray-300 dark:border-gray-500 sm:px-4 sm:py-2">
+        <div className="flex h-16 w-full items-center justify-between border-b border-gray-300 p-2 transition-none dark:border-gray-500 sm:px-4 sm:py-2">
             <div className="flex items-center justify-center dark:text-gray-200">
                 {theme.isHidden && (
                     <div className="mr-2">
                         <Button
                             circle={true}
                             primary={true}
-                            className="button-toggle !w-8 !h-8 p-0"
+                            className="button-toggle !h-8 !w-8 !border-0 p-0"
                             onClick={handleReturn}
                         >
-                            <div className="cursor-pointer flex w-8 h-8 items-center justify-center">
+                            <div className="flex h-8 w-8 cursor-pointer items-center justify-center">
                                 <ion-icon name="chevron-back-sharp"></ion-icon>
                             </div>
                         </Button>
                     </div>
                 )}
                 <div className="mr-3">
-                    <Avatar src={conversation?.avatar} />
+                    <Avatar
+                        user={{
+                            id: conversation?.receiverId,
+                            avatar: conversation.avatar,
+                        }}
+                    />
                 </div>
                 <div className="text-semibold line-clamp-1">
                     {conversation?.name || ''}
@@ -65,10 +69,10 @@ function Header() {
                     <Button
                         circle={true}
                         primary={true}
-                        className="button-toggle !w-8 !h-8 p-0"
+                        className="button-toggle !h-8 !w-8 !border-0 p-0"
                         onClick={handleCallAudioClick}
                     >
-                        <div className="cursor-pointer flex w-8 h-8 items-center justify-center">
+                        <div className="flex h-8 w-8 cursor-pointer items-center justify-center">
                             <ion-icon name="call"></ion-icon>
                         </div>
                     </Button>
@@ -77,10 +81,10 @@ function Header() {
                     <Button
                         circle={true}
                         primary={true}
-                        className="button-toggle !w-8 !h-8 p-0"
+                        className="button-toggle mx-2 !h-8 !w-8 !border-0 p-0"
                         onClick={handleCallVideoClick}
                     >
-                        <div className="cursor-pointer flex w-8 h-8 items-center justify-center">
+                        <div className="flex h-8 w-8 cursor-pointer items-center justify-center">
                             <ion-icon name="videocam"></ion-icon>
                         </div>
                     </Button>
@@ -89,10 +93,10 @@ function Header() {
                     <Button
                         circle={true}
                         primary={true}
-                        className="button-toggle !w-8 !h-8 p-0"
+                        className="button-toggle !h-8 !w-8 !border-0 p-0"
                         onClick={handleEllipsisClick}
                     >
-                        <div className="cursor-pointer flex w-8 h-8 items-center justify-center">
+                        <div className="flex h-8 w-8 cursor-pointer items-center justify-center">
                             <ion-icon name="ellipsis-horizontal-sharp"></ion-icon>
                         </div>
                     </Button>

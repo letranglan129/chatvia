@@ -21,18 +21,27 @@ export const messageSlice = createSlice({
                 messages = [action.payload, ...state.messageArr]
                 state.messageArr = messages
             }
-            state.messageCurrent = state.messageArr.slice(state.from, state.step)
+            
+            state.from = 0
+            state.step = 20
+            state.isHasMore = true
+            state.messageCurrent = state.messageArr.slice(
+                state.from,
+                state.step
+            )
         },
         loadMoreMessage(state) {
             state.from += state.step
             let to = state.from + state.step
-            
+
             if (to > state.messageArr.length) {
                 to = state.messageArr.length
                 state.isHasMore = false
             }
-            
-            state.messageCurrent = state.messageCurrent.concat(state.messageArr.slice(state.from, to))
+
+            state.messageCurrent = state.messageCurrent.concat(
+                state.messageArr.slice(state.from, to)
+            )
         },
         removeAllMessage(state) {
             state.messageArr.length = 0
@@ -42,12 +51,18 @@ export const messageSlice = createSlice({
         },
         removeMessageById(state, action) {
             state.messageArr = state.messageArr.filter(
-                message => message._id !== action.payload
+                (message) => message._id !== action.payload
+            )
+            state.messageCurrent = state.messageArr.slice(
+                state.from,
+                state.step
             )
         },
         updateMessageById(state, action) {
             const { id, ...updateData } = action.payload
-            const index = state.messageCurrent.findIndex(item => item._id === id)
+            const index = state.messageCurrent.findIndex(
+                (item) => item._id === id
+            )
             if (index !== -1) {
                 state.messageCurrent[index] = {
                     ...state.messageCurrent[index],

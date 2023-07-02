@@ -17,11 +17,11 @@ export default function Update({ isOpen, onRequestClose }) {
     const axiosInstance = createInstance()
     const dispacth = useDispatch()
     const [imageFile, setImageFile] = useState()
-    const { user } = useSelector(state => state.auth.currentUser)
+    const { user } = useSelector((state) => state.auth.currentUser)
     const [name, setName] = useState(user.name)
     const showImageRef = useRef(null)
 
-    const handleChangeImage = async e => {
+    const handleChangeImage = async (e) => {
         const imageFile = e.target.files[0]
         setImageFile(imageFile)
 
@@ -44,13 +44,15 @@ export default function Update({ isOpen, onRequestClose }) {
                     avatar: resUploadImage?.data.secure_url || user.avatar,
                 })
                 .then(async () => {
-                    const avatarSplit = user.avatar.split('/')
-                    const avatarName =
-                        avatarSplit[avatarSplit.length - 1].split('.')[0]
+                    if (user?.avatar) {
+                        const avatarSplit = user?.avatar?.split('/')
+                        const avatarName =
+                            avatarSplit[avatarSplit.length - 1].split('.')[0]
 
-                    await deleteImage(
-                        `${process.env.REACT_APP_CLOUDINARY_PRESET_NAME}/${avatarName}`
-                    )
+                        await deleteImage(
+                            `${process.env.REACT_APP_CLOUDINARY_PRESET_NAME}/${avatarName}`
+                        )
+                    }
 
                     dispacth(
                         updateInfo({
@@ -60,9 +62,9 @@ export default function Update({ isOpen, onRequestClose }) {
                         })
                     )
                 })
-            toast('Thanh cong!')
+            toast('Cập nhật ảnh thành công!!!')
         } catch (error) {
-            toast('🦄 Wow so easy!')
+            toast('Đã xảy ra lỗi!!!')
         }
     }
 
@@ -75,24 +77,24 @@ export default function Update({ isOpen, onRequestClose }) {
             className="profile-modal-content"
         >
             <div>
-                <div className="flex items-center justify-between p-4 border-b dark:border-b-gray-500">
+                <div className="flex items-center justify-between border-b p-4 dark:border-b-gray-500">
                     <h2 className="text-lg">Cập nhật thông tin</h2>
                     <span
-                        className="text-3xl leading-0 cursor-pointer"
+                        className="cursor-pointer text-3xl leading-0"
                         onClick={onRequestClose}
                     >
                         <ion-icon name="close-outline"></ion-icon>
                     </span>
                 </div>
                 <div className="p-4">
-                    <div className="text-center mb-4">
-                        <div className="relative inline-block mx-auto">
+                    <div className="mb-4 text-center">
+                        <div className="relative mx-auto inline-block">
                             <Avatar
                                 isNoDot={true}
-                                className="rounded-full w-32 h-32"
+                                className="h-32 w-32 rounded-full"
                                 id="changeImageProfile"
                                 ref={showImageRef}
-                                src={user.avatar || DEFAULT_IMG.AVATAR}
+                                user={user}
                                 alt=""
                             />
                             <input
@@ -104,7 +106,7 @@ export default function Update({ isOpen, onRequestClose }) {
                             />
                             <label
                                 htmlFor="changeImage"
-                                className="absolute top-3/4 left-2/3 bg-white dark:bg-gray-500 dark:border-gray-700 cursor-pointer leading-0 w-8 h-8 flex items-center justify-center rounded-full border-2"
+                                className="absolute top-3/4 left-2/3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 bg-white leading-0 dark:border-gray-700 dark:bg-gray-500"
                             >
                                 <ion-icon name="camera-reverse-outline"></ion-icon>
                             </label>
@@ -112,23 +114,23 @@ export default function Update({ isOpen, onRequestClose }) {
                     </div>
                     <div className="mb-4">
                         <label htmlFor="">
-                            <p className="text-sm mb-1">Tên hiển thị</p>
+                            <p className="mb-1 text-sm">Tên hiển thị</p>
                         </label>
                         <input
                             type="text"
                             value={name}
-                            onChange={e => setName(e.target.value)}
+                            onChange={(e) => setName(e.target.value)}
                             name=""
                             id=""
-                            className="px-3 py-2 text-15 w-full rounded-md border dark:border-gray-500 focus:outline-none focus:border-blue-500 dark:bg-gray-700"
+                            className="w-full rounded-md border px-3 py-2 text-15 focus:border-blue-500 focus:outline-none dark:border-gray-500 dark:bg-gray-700"
                         />
-                        <p className="text-xs mt-1">
+                        <p className="mt-1 text-xs">
                             Sử dụng tên thật để bạn bè dễ dàng nhận diện hơn
                         </p>
                     </div>
                     <div className="mb-4">
                         <label htmlFor="">
-                            <p className="text-sm mb-1">Email đăng kí</p>
+                            <p className="mb-1 text-sm">Email đăng kí</p>
                         </label>
                         <input
                             type="text"
@@ -136,12 +138,12 @@ export default function Update({ isOpen, onRequestClose }) {
                             readOnly
                             name=""
                             id=""
-                            className="px-3 py-2 text-15 w-full rounded-md border focus:outline-none cursor-not-allowed text-gray-400"
+                            className="w-full cursor-not-allowed rounded-md border px-3 py-2 text-15 text-gray-400 focus:outline-none"
                         />
                     </div>
                     <div className="mb-4">
                         <label htmlFor="">
-                            <p className="text-sm mb-1">Số điện đăng kí</p>
+                            <p className="mb-1 text-sm">Số điện đăng kí</p>
                         </label>
                         <input
                             type="text"
@@ -149,19 +151,19 @@ export default function Update({ isOpen, onRequestClose }) {
                             readOnly
                             name=""
                             id=""
-                            className="px-3 py-2 text-15 w-full rounded-md border focus:outline-none cursor-not-allowed text-gray-400"
+                            className="w-full cursor-not-allowed rounded-md border px-3 py-2 text-15 text-gray-400 focus:outline-none"
                         />
                     </div>
                     <div className="text-right">
                         <Button
-                            className="!py-1 !px-3 !min-w-0 !rounded-lg bg-gray-200 dark:bg-gray-500 dark:text-white font-medium"
+                            className="!min-w-0 !rounded-lg bg-gray-200 !py-1 !px-3 font-medium dark:bg-gray-500 dark:text-white"
                             onClick={onRequestClose}
                         >
                             Hủy
                         </Button>
                         <Button
                             onClick={handleUpdateInfo}
-                            className="!py-1 !px-3 !min-w-0 !rounded-lg bg-blue-500 text-white font-medium"
+                            className="!min-w-0 !rounded-lg bg-blue-500 !py-1 !px-3 font-medium text-white"
                         >
                             Cập nhật
                         </Button>

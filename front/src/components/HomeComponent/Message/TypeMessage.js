@@ -13,7 +13,7 @@ const MessageText = memo(
         contentEditable,
         textState = () => {},
     }) => {
-        const url = message.match(URL_REG)
+        const url = message?.match(URL_REG)
         const [text, setText] = useState(message)
         const debounceText = useDebounce(text, 300)
         const editor = useRef()
@@ -28,17 +28,18 @@ const MessageText = memo(
                     <a
                         href={url[0]}
                         target="_blank"
-                        className="max-w-xs block hover:underline cursor-pointer"
+                        className="w-full block cursor-pointer break-all hover:underline"
+                        rel="noreferrer"
                     >
                         {parse(message || '')}
                     </a>
                 )
             if (contentEditable)
                 return (
-                    <p  
+                    <p
                         ref={editor}
                         className="outline-none"
-                        onInput={e => setText(e?.currentTarget.innerHTML)}
+                        onInput={(e) => setText(e?.currentTarget.innerHTML)}
                         contentEditable={contentEditable}
                         suppressContentEditableWarning={contentEditable}
                     >
@@ -50,8 +51,8 @@ const MessageText = memo(
         }
 
         useEffect(() => {
-            if(editor.current) {
-                editor.current.scrollIntoView({block: 'end'})
+            if (editor.current) {
+                editor.current.scrollIntoView({ block: 'end' })
                 editor.current.focus()
                 window.getSelection().selectAllChildren(editor.current)
                 window.getSelection().collapseToEnd()
@@ -60,18 +61,18 @@ const MessageText = memo(
 
         return (
             <>
-                <div className="break-all text-15">
-                    {renderMessage()}
-                </div>
-                {url?.length > 0 && !disableLink && (
-                    <div className="my-3">
-                        <Microlink
-                            url={url[0]}
-                            size="large"
-                            media={['image', 'logo']}
-                        />
-                    </div>
-                )}
+                    <div className="text-15">{renderMessage()}</div>
+                    {url?.length > 0 && !disableLink && (
+                        <div
+                            className="my-3 inline-block w-full"
+                        >
+                            <Microlink
+                                url={url[0]}
+                                size="large"
+                                media={['image', 'logo']}
+                            />
+                        </div>
+                    )}
             </>
         )
     }
@@ -84,39 +85,49 @@ function TypeMessage({
     contentEditable,
     textState,
 }) {
-    return ({
-        text: (
-            <MessageText
-                message={messInfo?.message}
-                disableLink={isTiny}
-                contentEditable={contentEditable}
-                textState={textState}
-            />
-        ),
-        file: (
-            <div className="bg-gray-100 dark:bg-gray-900 list-none flex-1">
-                <File
-                    type={messInfo?.file?.type}
-                    name={messInfo?.file?.name}
-                    size={messInfo?.file?.size}
-                    link={messInfo?.file?.link}
-                    disableShareButton={messInfo?.disableShareButton}
-                    disableDeleteButton={messInfo?.disableDeleteButton}
+    return (
+        {
+            link: (
+                <MessageText
+                    message={messInfo?.text}
+                    disableLink={isTiny}
+                    contentEditable={contentEditable}
+                    textState={textState}
                 />
-            </div>
-        ),
-        imageGroup: isTiny ? (
-            <File
-                name={`${messInfo?.listImg?.length} Hình ảnh`}
-                disableShareButton={true}
-                disableDeleteButton={true}
-                disableDownloadButton={true}
-                type="jpg"
-            />
-        ) : (
-            <ImageGroup listImg={messInfo?.listImg} />
-        ),
-    }[type] || null)
+            ),
+            text: (
+                <MessageText
+                    message={messInfo?.text}
+                    disableLink={isTiny}
+                    contentEditable={contentEditable}
+                    textState={textState}
+                />
+            ),
+            file: (
+                <div className="flex-1 list-none bg-gray-100 dark:bg-gray-900">
+                    <File
+                        type={messInfo?.file?.type}
+                        name={messInfo?.file?.name}
+                        size={messInfo?.file?.size}
+                        link={messInfo?.file?.link}
+                        disableShareButton={messInfo?.disableShareButton}
+                        disableDeleteButton={messInfo?.disableDeleteButton}
+                    />
+                </div>
+            ),
+            imageGroup: isTiny ? (
+                <File
+                    name={`${messInfo?.listImg?.length} Hình ảnh`}
+                    disableShareButton={true}
+                    disableDeleteButton={true}
+                    disableDownloadButton={true}
+                    type="jpg"
+                />
+            ) : (
+                <ImageGroup listImg={messInfo?.listImg} />
+            ),
+        }[type] || null
+    )
 }
 
 export default memo(TypeMessage)

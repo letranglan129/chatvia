@@ -25,9 +25,9 @@ function File({
     ...props
 }) {
     return (
-        <div className={`p-2 border ${className}`}>
+        <div className={`border p-2 ${className}`}>
             <div className="flex items-center justify-between">
-                <div className="flex-shrink-0 w-10 h-10 mr-4 rounded-lg text-2xl flex items-center justify-center text-indigo-500 bg-indigo-800 bg-opacity-10 dark:bg-indigo-900 dark:bg-opacity-50">
+                <div className="mr-4 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-800 bg-opacity-10 text-2xl text-indigo-500 dark:bg-indigo-900 dark:bg-opacity-50">
                     {{
                         text: <ion-icon name="document-text"></ion-icon>,
                         image: <ion-icon name="image"></ion-icon>,
@@ -43,14 +43,16 @@ function File({
 
                 <div className="flex-1 line-clamp-1">
                     <p
-                        className="text-sm font-medium line-clamp-1 text-gray-700 dark:text-gray-200"
+                        className="text-sm font-medium text-gray-700 line-clamp-1 dark:text-gray-200"
                         title={name || 'Unknown'}
                     >
                         {name || 'Unknown'}
                     </p>
-                    {size && <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {calcSize(size || 0)}
-                    </p>}
+                    {size && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {calcSize(size || 0)}
+                        </p>
+                    )}
                 </div>
 
                 <div className="">
@@ -58,7 +60,9 @@ function File({
                         <a
                             download
                             href={link}
-                            className="inline-block leading-8 text-center ml-2 text-lg w-8 h-8 text-gray-700 dark:text-gray-200"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="ml-2 inline-block h-8 w-8 cursor-pointer text-center text-lg leading-8 text-gray-700 dark:text-gray-200"
                         >
                             <ion-icon name="cloud-download-outline"></ion-icon>
                         </a>
@@ -67,7 +71,7 @@ function File({
                     {!disableDeleteButton && (
                         <a
                             href="/something"
-                            className="inline-block leading-8 text-center ml-2 text-lg w-8 h-8 text-gray-700 dark:text-gray-200"
+                            className="ml-2 inline-block h-8 w-8 text-center text-lg leading-8 text-gray-700 dark:text-gray-200"
                         >
                             <ion-icon name="trash-outline"></ion-icon>
                         </a>
@@ -75,7 +79,7 @@ function File({
                     {!disableShareButton && (
                         <a
                             href="/something"
-                            className="inline-block leading-8 text-center ml-2 text-lg w-8 h-8 text-gray-700 dark:text-gray-200"
+                            className="ml-2 inline-block h-8 w-8 text-center text-lg leading-8 text-gray-700 dark:text-gray-200"
                         >
                             <ion-icon name="arrow-redo-outline"></ion-icon>
                         </a>

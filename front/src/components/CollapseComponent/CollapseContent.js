@@ -1,27 +1,21 @@
 import { useRef } from 'react'
 import { memo } from 'react'
 import { useCollapseStore } from './context'
+import _ from 'lodash'
 
 function CollapseContent({ id, children, className }) {
-    const contentRef = useRef()
     const { open } = useCollapseStore()
+    
     return (
         <div
-            className={`bg-white overflow-hidden dark:bg-gray-900 bg-opacity-50 rounded-b-lg px-5 ${className}`}
+            className={`transition-grid-template-rows grid overflow-hidden rounded-b-lg bg-white bg-opacity-50 px-5 dark:bg-gray-900 ${className}`}
             style={{
-                transition: 'height 0.3s linear',
-                height: `${
-                    open.includes(id)
-                        ? `${contentRef.current.clientHeight}px`
-                        : 0
-                }`,
+                gridTemplateRows: open.includes(id) ? '1fr' : '0fr',
             }}
         >
-            <ul ref={contentRef}>
-                {children}
-            </ul>
+            <ul className="overflow-hidden">{children}</ul>
         </div>
     )
 }
 
-export default memo(CollapseContent)
+export default CollapseContent

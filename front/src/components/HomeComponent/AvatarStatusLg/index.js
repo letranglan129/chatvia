@@ -1,17 +1,28 @@
 import { memo } from 'react'
 import Avatar from '../Avatar'
 
-function AvatarStatusLg({name, src, status}) {
+function AvatarStatusLg({ name, src, status }) {
     return (
-		<div className='text-center pb-5 border-b dark:border-gray-600 mb-8'>
-			<Avatar isNoDot={true} className='rounded-full w-24 h-24 mx-auto mb-4 object-cover' src={src} alt='' />
-			<p className='font-medium line-clamp-1 text-gray-700 dark:text-gray-200'>{name}</p>
-			<div>
-				<span className='inline-block w-3 h-3 border-4 border-green-500 rounded-full mr-2'></span>
-				<span className='text-sm text-gray-500 dark:text-gray-400'>Active</span>
-			</div>
-		</div>
-	)
+        <div className="mb-8 border-b pb-5 text-center dark:border-gray-600">
+            <Avatar
+                isNoDot={true}
+                className="mx-auto mb-4 h-24 w-24 rounded-full object-cover"
+                user={{
+                    avatar: src,
+                }}
+                alt=""
+            />
+            <p className="font-medium text-gray-700 line-clamp-1 dark:text-gray-200">
+                {name}
+            </p>
+            {/* <div>
+                <span className="mr-2 inline-block h-3 w-3 rounded-full border-4 border-green-500"></span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Active
+                </span>
+            </div> */}
+        </div>
+    )
 }
 
 export default memo(AvatarStatusLg)

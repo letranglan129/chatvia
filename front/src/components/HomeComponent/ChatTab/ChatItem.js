@@ -9,7 +9,7 @@ import {
 } from '../../../redux/slice/messageSlice'
 import createAxios from '../../../ulti/createInstance'
 import { changeCurrentChat } from '../../../redux/slice/currentChatSlice'
-import { getAll, add } from '../../../indexDB'
+import { getAll, add, clear } from '../../../indexDB'
 import { STORE_NAME_INDEXEDDB } from '../../../constant'
 import 'moment/locale/vi'
 import { removeNewsMessageNotify } from '../../../redux/slice/notifySlice'
@@ -50,22 +50,18 @@ function ChatItem({ conversation }) {
             { conversationId: conversation._id, userId: user._id },
             (res) => console.log('success')
         )
-
-        if (data.length !== 0) {
-            dispatch(pushMessage(data))
-        } else {
-            const messages = await axios.get(`/message/${conversation._id}`)
-            dispatch(pushMessage(messages.data))
-            messages?.data.forEach(
-                async (message) =>
-                    await add(
-                        message._id,
-                        message,
-                        message.conversationId,
-                        STORE_NAME_INDEXEDDB
-                    )
-            )
-        }
+        await clear(conversation._id, STORE_NAME_INDEXEDDB)
+        const messages = await axios.get(`/message/${conversation._id}`)
+        dispatch(pushMessage(messages.data))
+        messages?.data.forEach(
+            async (message) =>
+                await add(
+                    message._id,
+                    message,
+                    message.conversationId,
+                    STORE_NAME_INDEXEDDB
+                )
+        )
     }
 
     return (
@@ -78,7 +74,10 @@ function ChatItem({ conversation }) {
         >
             <div className="mr-4 flex-none">
                 <Avatar
-                    src={conversation?.avatar || DEFAULT_IMG.AVATAR}
+                    user={{
+                        id: conversation?.receiverId,
+                        avatar: conversation?.avatar,
+                    }}
                     isNoDot={!!conversation?.avatar}
                 />
             </div>
@@ -88,7 +87,7 @@ function ChatItem({ conversation }) {
                         {conversation?.name}
                     </p>
                     <p className="text-xs text-gray-500 line-clamp-1 dark:text-gray-400">
-                        {moment(conversation?.createdAt).fromNow(true) || '123'}
+                        {moment(conversation?.updatedAt).fromNow(true) || '123'}
                     </p>
                 </div>
                 <div className="flex-1">
@@ -100,9 +99,8 @@ function ChatItem({ conversation }) {
                         }`}
                     >
                         {user._id === conversation?.senderId &&
-                            `Bạn: ${parse(
-                                conversation?.lastMessage?.text || ''
-                            )}`}
+                            `Bạn: ` +
+                                parse(conversation?.lastMessage?.text || '')}
                         {user._id !== conversation?.senderId &&
                             `${parse(conversation?.lastMessage?.text || '')}`}
                     </p>

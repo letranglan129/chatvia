@@ -2,26 +2,32 @@ import parse from 'html-react-parser'
 import { memo, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
-import createAxios from '../../ulti/createInstance'
 import {
     NAME_NEW_MESSAGE_INDEXEDDB,
     STATUS_RESPONSE,
     STORE_NAME_INDEXEDDB,
     STORE_NEW_MESSAGE_INDEXEDDB,
 } from '../../constant'
-import { clear, get, getAll, set } from '../../indexDB'
-import { addFriend, getFriendList } from '../../redux/slice/authSlice'
+import { clear, del, get, getAll, set } from '../../indexDB'
+import { getFriendList, removeFriendId } from '../../redux/slice/authSlice'
 import {
+    deleteConversation,
     getConversation,
-    updateLoadingStatus,
-    updateLastestMessage,
+    removeLastMessage,
+    replaceConversation,
     sortConsersation,
+    updateLastestMessage,
+    updateLoadingStatus,
 } from '../../redux/slice/conversationSlice'
-import { getListFriend } from '../../redux/slice/friendsSlice'
-import { pushMessage } from '../../redux/slice/messageSlice'
+import { changeCurrentChat } from '../../redux/slice/currentChatSlice'
+import { getListFriend, removeFriend } from '../../redux/slice/friendsSlice'
+import { pushMessage, removeAllMessage } from '../../redux/slice/messageSlice'
 import { addNewMessageNotify, pushNotify } from '../../redux/slice/notifySlice'
+import { setOnline } from '../../redux/slice/onlineSlice'
+import { updateToggleMess } from '../../redux/slice/viewMessageSlice'
 import { socket } from '../../socket'
 import { getLastMessage } from '../../ulti'
+import createAxios from '../../ulti/createInstance'
 import Dialog from '../Dialog'
 import Loading from '../Loading'
 import ChatTab from './ChatTab'
@@ -39,15 +45,30 @@ function Home() {
     const dispatch = useDispatch()
     const axios = createAxios()
     const [tab, setTab] = useState('chat')
-    const createGroupDialog = useSelector(state => state.createGroupDialog)
-    const { toggleMess } = useSelector(state => state.viewMessage)
-    const { user } = useSelector(state => state.auth.currentUser)
-    const { conversation } = useSelector(state => state.currentChat)
-    const { isLoading } = useSelector(state => state.conversation)
+    const createGroupDialog = useSelector((state) => state.createGroupDialog)
+    const { toggleMess } = useSelector((state) => state.viewMessage)
+    const { user } = useSelector((state) => state.auth.currentUser)
+    const { conversation } = useSelector((state) => state.currentChat)
+    const { isLoading } = useSelector((state) => state.conversation)
 
     // Listen event new message from server
     useEffect(() => {
-        socket.on('message', async data => {
+        socket.emit('joinApp', {
+            userId: user._id,
+        })
+        socket.on('message', async (data) => {
+            if (
+                data?.type === 'imageGroup' ||
+                data?.type === 'file' ||
+                data?.type === 'link'
+            ) {
+                console.log(data)
+                socket.emit('getConversation', {
+                    conversationId: data.conversationId,
+                    userId: user._id,
+                })
+            }
+
             try {
                 await set(
                     data._id,
@@ -59,22 +80,30 @@ function Home() {
                     data.conversationId,
                     NAME_NEW_MESSAGE_INDEXEDDB,
                     STORE_NEW_MESSAGE_INDEXEDDB
-                ).then(message => {
-                    return set(
-                        data.conversationId,
-                        {
-                            ...message,
-                            lastMessage: {
-                                text: getLastMessage(data.type, data.text),
-                                type: data.type || 'text',
+                ).then(async (message) => {
+                    if (message)
+                        return set(
+                            data.conversationId,
+                            {
+                                ...message,
+                                lastMessage: {
+                                    text: getLastMessage(data.type, data.text),
+                                    type: data.type || 'text',
+                                },
+                                createdAt: data.createdAt,
+                                updatedAt: data.updatedAt,
+                                senderId: data.senderId,
                             },
-                            createdAt: data.createdAt,
-                            updatedAt: data.updatedAt,
-                            senderId: data.senderId,
-                        },
-                        NAME_NEW_MESSAGE_INDEXEDDB,
-                        STORE_NEW_MESSAGE_INDEXEDDB
-                    )
+                            NAME_NEW_MESSAGE_INDEXEDDB,
+                            STORE_NEW_MESSAGE_INDEXEDDB
+                        )
+                    else {
+                        await clear(
+                            NAME_NEW_MESSAGE_INDEXEDDB,
+                            STORE_NEW_MESSAGE_INDEXEDDB
+                        )
+                        getConversations()
+                    }
                 })
                 dispatch(updateLastestMessage(data))
                 if (conversation._id === data.conversationId) {
@@ -96,64 +125,45 @@ function Home() {
         return () => socket.removeListener('message')
     }, [conversation])
 
-    // Get conversation from IndexedDB/Server
-    useEffect(() => {
-        const getConversations = async () => {
-            try {
-                let conversationIDB = await getAll(
-                    NAME_NEW_MESSAGE_INDEXEDDB,
-                    STORE_NEW_MESSAGE_INDEXEDDB
-                )
-
-                if (conversationIDB.length === 0) {
-                    await clear(
+    const getConversations = async () => {
+        try {
+            await clear(NAME_NEW_MESSAGE_INDEXEDDB, STORE_NEW_MESSAGE_INDEXEDDB)
+            const res = await axios.get(`/conversation/${user._id}`)
+            res.data?.forEach(async (conversation) => {
+                if (conversation)
+                    return await set(
+                        conversation?._id,
+                        conversation,
                         NAME_NEW_MESSAGE_INDEXEDDB,
                         STORE_NEW_MESSAGE_INDEXEDDB
                     )
-                    const res = await axios.get(`/conversation/${user._id}`)
-                    res.data?.forEach(async conversation => {
-                        socket.emit('joinApp', {
-                            userId: user._id,
-                            roomId: conversation?._id,
-                        })
-                        if (conversation)
-                            return await set(
-                                conversation?._id,
-                                conversation,
-                                NAME_NEW_MESSAGE_INDEXEDDB,
-                                STORE_NEW_MESSAGE_INDEXEDDB
-                            )
-                    })
-                    return dispatch(getConversation(res?.data))
-                }
-
-                conversationIDB.forEach(conversation =>
-                    socket.emit('joinApp', {
-                        userId: user._id,
-                        roomId: conversation?._id,
-                    })
-                )
-
-                dispatch(getConversation(conversationIDB))
-            } catch (err) {
-                toast.error('Lấy dữ liệu thất bại')
-                console.log(err);
-            } finally {
-                dispatch(updateLoadingStatus(false))
-            }
+            })
+            dispatch(getConversation(res?.data))
+        } catch (err) {
+            toast.error('Lấy dữ liệu thất bại')
+            console.log(err)
+        } finally {
+            dispatch(updateLoadingStatus(false))
         }
+    }
+
+    // Get conversation from IndexedDB/Server
+    useEffect(() => {
+        socket.emit('getUserOnline', {
+            userId: user._id,
+        })
         getConversations()
     }, [])
 
     // Listen event receive notify from server
     useEffect(() => {
-        socket.on('receiveNotify', data => {
+        socket.on('receiveNotify', (data) => {
             if (data) {
                 toast(parse(data.content), {
                     icon: ({ theme, type }) => (
                         <img
                             src="https://random.imagecdn.app/200/200"
-                            className="w-full h-full rounded-full"
+                            className="h-full w-full rounded-full"
                             alt=""
                         />
                     ),
@@ -168,7 +178,7 @@ function Home() {
 
     // Get notify from DB
     useEffect(() => {
-        socket.emit('getNotify', { userId: user._id }, response => {
+        socket.emit('getNotify', { userId: user._id }, (response) => {
             if (response?.data) {
                 dispatch(pushNotify(response?.data))
             }
@@ -177,9 +187,24 @@ function Home() {
 
     // Listen event accept friend
     useEffect(() => {
-        socket.on('acceptFriend', res => {
+        socket.on('acceptFriend', (res) => {
             if (res?.status === STATUS_RESPONSE.success) {
-                dispatch(addFriend(res?.id))
+                socket.emit('joinApp', {
+                    userId: user._id,
+                })
+                dispatch(getListFriend())
+                socket.emit(
+                    'handleUser',
+                    {
+                        type: 'GET_FRIEND_LIST',
+                        userId: user._id,
+                    },
+                    (response) => {
+                        if (response.status === STATUS_RESPONSE.success) {
+                            dispatch(getFriendList(response.data))
+                        }
+                    }
+                )
             }
         })
 
@@ -189,7 +214,7 @@ function Home() {
                 type: 'GET_FRIEND_LIST',
                 userId: user._id,
             },
-            response => {
+            (response) => {
                 if (response.status === STATUS_RESPONSE.success) {
                     dispatch(getFriendList(response.data))
                 }
@@ -199,9 +224,9 @@ function Home() {
 
     // Get UNREAD message
     useEffect(() => {
-        socket.emit('getUnreadMessage', { userId: user._id }, response => {
+        socket.emit('getUnreadMessage', { userId: user._id }, (response) => {
             let conversationUnread = response?.messageUnread.map(
-                item => item.conversationId
+                (item) => item.conversationId
             )
             conversationUnread = [...new Set(conversationUnread)]
 
@@ -215,11 +240,80 @@ function Home() {
     }, [])
 
     useEffect(() => {
-        socket.on('join-new-group', (group) => {
-            socket.emit('join-group', group)
+        socket.on('joinNewGroup', (group) => {
+            socket.emit('joinGroup', group)
             dispatch(getConversation(group))
         })
+
+        socket.emit('getOnline')
+        socket.on('responseGetOnline', (response) => {
+            dispatch(setOnline(response))
+        })
+
+        socket.on('deleteHistoryConversation', async (response) => {
+            await clear(response.conversation._id, STORE_NAME_INDEXEDDB)
+            dispatch(
+                removeLastMessage({ conversationId: response.conversation._id })
+            )
+            await set(
+                response.conversation._id,
+                response.conversation,
+                NAME_NEW_MESSAGE_INDEXEDDB,
+                STORE_NEW_MESSAGE_INDEXEDDB
+            )
+
+            if (conversation._id === response.conversation._id) {
+                dispatch(updateToggleMess({ toggleMess: null }))
+                dispatch(changeCurrentChat({}))
+                dispatch(removeAllMessage())
+            }
+        })
+
+        socket.on('deleteFriend', (result) => {
+            dispatch(removeFriendId(result.friendId))
+            dispatch(removeFriend(result.friendId))
+        })
+
+        socket.on('error', (err) => console.log(err))
     }, [])
+
+    useEffect(() => {
+        socket.on('getConversation', async (response) => {
+            dispatch(replaceConversation(response))
+            await set(
+                response._id,
+                response,
+                NAME_NEW_MESSAGE_INDEXEDDB,
+                STORE_NEW_MESSAGE_INDEXEDDB
+            )
+
+            if (conversation._id === response._id) {
+                dispatch(changeCurrentChat(response))
+            }
+        })
+
+        socket.on('outGroup', async (result) => {
+            console.log(result)
+            await clear(result._id, STORE_NAME_INDEXEDDB)
+            await del(
+                result._id,
+                NAME_NEW_MESSAGE_INDEXEDDB,
+                STORE_NEW_MESSAGE_INDEXEDDB
+            )
+            dispatch(deleteConversation(result))
+
+            if (conversation._id === result._id) {
+                dispatch(updateToggleMess({ toggleMess: null }))
+                dispatch(changeCurrentChat({}))
+                dispatch(removeAllMessage())
+            }
+        })
+
+        return () => {
+            socket.removeListener('getConversation')
+            socket.removeListener('outGroup')
+        }
+    }, [conversation])
 
     return (
         <>

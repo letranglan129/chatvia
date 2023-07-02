@@ -132,7 +132,7 @@ function Sidebar({ tab, setTab }) {
                             <Avatar
                                 isNoDot={true}
                                 className="rounded-full w-7 h-7"
-                                src={user.avatar}
+                                user={user}
                                 alt="Avatar"
                             />
                         </span>

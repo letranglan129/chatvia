@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  api-chatvia:
+    container_name: api-chatvia
+    image: api-chatvia
+    restart: always
+    build: 
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - 8008:3000
+    command: "npm run start"
+    env_file:
+      - .env
+  

@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  chatvia:
+    container_name: chatvia-prod
+    image: chatvia-prod
+    build:
+      context: .
+      target: production
+      dockerfile: dockerfile.prod
+    ports:
+      - 8007:80
+    env_file:
+      - .env

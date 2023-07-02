@@ -5,14 +5,17 @@ import { DEFAULT_IMG } from '../../../assets/image'
 import { STATUS_RESPONSE, STORE_NAME_INDEXEDDB } from '../../../constant'
 import { add, getAll } from '../../../indexDB'
 import { changeCurrentChat } from '../../../redux/slice/currentChatSlice'
-import { pushMessage, removeAllMessage } from '../../../redux/slice/messageSlice'
+import {
+    pushMessage,
+    removeAllMessage,
+} from '../../../redux/slice/messageSlice'
 import { updateToggleMess } from '../../../redux/slice/viewMessageSlice'
 import { socket } from '../../../socket'
 import createAxios from '../../../ulti/createInstance'
 import Button from '../../Button'
 
 function User({ friend, className }) {
-    const { user } = useSelector(state => state.auth.currentUser)
+    const { user } = useSelector((state) => state.auth.currentUser)
     const dispatch = useDispatch()
     const axios = createAxios()
     const [state, setState] = useState()
@@ -50,7 +53,7 @@ function User({ friend, className }) {
                 type: 'ADD_FRIEND',
             },
             //  After revoke add friend successfully, change button send add friend
-            response => {
+            (response) => {
                 if (response.status === STATUS_RESPONSE.success) {
                     setState('REVOKE')
                 }
@@ -68,7 +71,7 @@ function User({ friend, className }) {
                 type: 'REVOKE_ADD_FRIEND',
             },
             //  After revoke add friend successfully, change button send add friend
-            response => {
+            (response) => {
                 if (response.status === STATUS_RESPONSE.success) {
                     toast.success(
                         'Bạn đã thu hồi yêu cầu kết bạn thành công!!!'
@@ -95,7 +98,7 @@ function User({ friend, className }) {
             },
 
             //  After accept friend successfully, change button open chat conversation
-            response => {
+            (response) => {
                 if (response.status === STATUS_RESPONSE.success) {
                     setState('OPEN_CHAT')
                 }
@@ -124,7 +127,7 @@ function User({ friend, className }) {
             )
             dispatch(pushMessage(messages.data))
             messages?.data.forEach(
-                async message =>
+                async (message) =>
                     await add(
                         message._id,
                         message,
@@ -138,14 +141,16 @@ function User({ friend, className }) {
     return (
         <>
             <div
-                className={`flex items-center px-4 py-2 select-none rounded-lg cursor-pointer dark:hover:bg-gray-600 hover:bg-slate-50 ${className}`}
+                className={`flex cursor-pointer select-none items-center rounded-lg px-4 py-2 hover:bg-slate-50 dark:hover:bg-gray-600 ${className}`}
             >
                 <img
-                    src={friend?.src || DEFAULT_IMG.AVATAR}
+                    src={friend?.src || friend?.avatar || DEFAULT_IMG.AVATAR}
                     className="h-10 w-10 rounded-full"
                     alt=""
                 />
-                <span className="ml-4 dark:text-gray-200">{friend?.name}</span>
+                <span className="ml-4 dark:text-gray-200">
+                    {friend?.name}
+                </span>
 
                 <div className="ml-auto dark:text-gray-200">
                     {
@@ -156,9 +161,9 @@ function User({ friend, className }) {
                                     title="Thu hồi yêu cầu kết bạn!"
                                     circle={true}
                                     primary={true}
-                                    className="!w-8 !h-8"
+                                    className="!h-8 !w-8"
                                 >
-                                    <div className="h-5 w-5 flex items-center justify-center">
+                                    <div className="flex h-5 w-5 items-center justify-center">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             style={{ fill: '#4292ff' }}
@@ -176,7 +181,7 @@ function User({ friend, className }) {
                                     style={{ color: '#4292ff' }}
                                     circle={true}
                                     primary={true}
-                                    className="!w-8 !h-8"
+                                    className="!h-8 !w-8"
                                 >
                                     <ion-icon name="person-add"></ion-icon>
                                 </Button>
@@ -187,7 +192,7 @@ function User({ friend, className }) {
                                     title={`Gửi yêu cầu kết bạn đến ${friend?.name}`}
                                     circle={true}
                                     primary={true}
-                                    className="!w-8 !h-8"
+                                    className="!h-8 !w-8"
                                 >
                                     <ion-icon name="person-add"></ion-icon>
                                 </Button>
@@ -198,7 +203,7 @@ function User({ friend, className }) {
                                     title={`Bắt đầu trò chuyện với ${friend?.name}`}
                                     circle={true}
                                     primary={true}
-                                    className="!w-8 !h-8"
+                                    className="!h-8 !w-8"
                                 >
                                     <ion-icon name="chatbubble"></ion-icon>
                                 </Button>

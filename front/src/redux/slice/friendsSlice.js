@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import createAxios from '../../ulti/createInstance'
 
-
 export const getListFriend = createAsyncThunk(
     'friend/getListFriend',
     async (_, thunkAPI) => {
@@ -18,7 +17,7 @@ export const getListFriend = createAsyncThunk(
 const friends = createSlice({
     name: 'friend',
     initialState: {
-        list: {},
+        list: [],
         status: null,
     },
     extraReducers: {
@@ -33,6 +32,14 @@ const friends = createSlice({
             state.status = 'success'
         },
     },
+    reducers: {
+        removeFriend: (state, action) => {
+            state.list = state.list.filter(
+                (friend) => friend._id !== action.payload
+            )
+        },
+    },
 })
 
+export const { removeFriend } = friends.actions
 export default friends.reducer

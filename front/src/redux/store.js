@@ -26,6 +26,7 @@ import forwardDialogSlice from './slice/dialog/forwardSlice'
 import createGroupSlice from './slice/dialog/createGroupSlice'
 import searchResultSlice from './slice/dialog/searchResultSlice'
 import swiperImageSlice from './slice/dialog/swiperImageSlice'
+import onlineSlice from './slice/onlineSlice'
 
 const persistConfig = {
     key: 'root',
@@ -51,6 +52,7 @@ const appReducer = combineReducers({
     createGroupDialog: createGroupSlice,
     searchResultDialog: searchResultSlice,
     swiperImageDialog: swiperImageSlice,
+    online: onlineSlice,
 })
 
 const rootReducer = (state, action) => {
@@ -67,7 +69,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 export const store = configureStore({
     reducer: persistedReducer,
-    middleware: getDefaultMiddleware =>
+    middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
                 ignoredActions: [

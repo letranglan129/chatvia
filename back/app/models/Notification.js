@@ -13,18 +13,14 @@ const Notification = Schema(
 			type: String,
 		},
 		sender: {
-			id: {
-				require: true,
-				type: String,
-			},
-			name: {
-				require: true,
-				type: String,
-			},
+			ref: 'User',
+			type: String,
+			require: true,
 		},
 		receiver: {
+			ref: 'User',
+			type: String,
 			require: true,
-			type: Array,
 		},
 		status: {
 			type: String,
@@ -32,7 +28,7 @@ const Notification = Schema(
 			require: true,
 		},
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 )
 
 module.exports = mongoose.model("Notification", Notification)

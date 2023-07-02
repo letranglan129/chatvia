@@ -1,44 +1,52 @@
 import { useContext } from 'react'
 import { useState } from 'react'
 import { createContext } from 'react'
-import { Home, Members } from '../path'
+import { Files, Home, Images, Links, Members } from '../path'
 
 const ConversationInfoContext = createContext()
 
 const routes = [
     {
         path: 'home',
-        title: 'Thông tin nhóm',
+        title: 'Thông tin',
         component: Home,
     },
     {
         path: 'members',
         title: 'Thành viên',
         component: Members,
-        children: [{ path: 'member', title: '' }],
     },
     {
-        path: 'media',
-        title: 'Kho lưu trữ',
-        component: '',
-        children: [{ path: 'member', title: '' }],
+        path: 'images',
+        title: 'Ảnh',
+        component: Images,
+    },
+    {
+        path: 'files',
+        title: 'File',
+        component: Files,
+    },
+    {
+        path: 'links',
+        title: 'Link',
+        component: Links,
     },
 ]
 
 const ConversationInfoProvider = ({ children, ...props }) => {
     const [history, setHistory] = useState([routes[0]])
 
-    const pushPath = path => {
+    const pushPath = (path) => {
         if (path)
-            setHistory(prev => {
-                const route = routes.find(route => route.path === path)
+            setHistory((prev) => {
+                const route = routes.find((route) => route.path === path)
                 return [route, ...prev]
             })
         else setHistory([])
     }
 
     const shiftPath = () => {
-        setHistory(prev => prev.slice(1))
+        setHistory((prev) => prev.slice(1))
     }
 
     const value = {

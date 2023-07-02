@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { userIdSocketStore } from '../../socket'
 
 export const auth = createSlice({
     name: 'auth',
@@ -10,7 +11,7 @@ export const auth = createSlice({
         },
     },
     reducers: {
-        loginStart: state => {
+        loginStart: (state) => {
             state.currentUser.isFetching = true
             state.currentUser.isError = false
             state.currentUser.user = null
@@ -20,25 +21,25 @@ export const auth = createSlice({
             state.currentUser.user = action.payload
             state.currentUser.isError = false
         },
-        loginError: state => {
+        loginError: (state) => {
             state.currentUser.isFetching = false
             state.currentUser.user = null
             state.currentUser.isError = true
         },
-        logoutStart: state => {
+        logoutStart: (state) => {
             state.currentUser.isFetching = true
         },
-        logoutSuccess: state => {
+        logoutSuccess: (state) => {
             state.currentUser.isFetching = false
             state.currentUser.user = null
             state.currentUser.isError = false
-            window.indexedDB.databases().then(db => {
+            window.indexedDB.databases().then((db) => {
                 db.forEach(({ name }) => {
                     window.indexedDB.deleteDatabase(name)
                 })
             })
         },
-        logoutError: state => {
+        logoutError: (state) => {
             state.currentUser.isFetching = false
             state.currentUser.isError = true
         },
@@ -53,12 +54,15 @@ export const auth = createSlice({
                 ...state.currentUser.user,
                 ...action.payload,
             }
-        }
-        // removeFriend: (state, action) => {
-        // 	state.currentUser.user?.friends = state.currentUser.user?.friends.filter(
-        // 		(friend) => friend.id !== action.payload
-        // 	)
-        // }
+        },
+        removeFriendId: (state, action) => {
+            state.currentUser.user = {
+                ...state.currentUser.user,
+                friends: state.currentUser.user?.friends.filter(
+                    (friend) => friend !== action.payload
+                ),
+            }
+        },
     },
 })
 
@@ -72,5 +76,6 @@ export const {
     addFriend,
     getFriendList,
     updateInfo,
+    removeFriendId,
 } = auth.actions
 export default auth.reducer
