@@ -16,10 +16,12 @@ const route = require('./routes')
 // Connect to MongooseDB
 db.connect()
 
-app.use(cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-}))
+app.use(
+	cors({
+		origin: true,
+		credentials: true,
+	}),
+)
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(cookieParser())

@@ -32,77 +32,89 @@ class UserController {
 	// @desc	Login
 	// @access	Private
 	async login(req, res) {
-		const emailBody = req.body?.email
-		const passwordBody = req.body?.password
-		console.log(await User.find({}))
-		const user = await User.findOne({ email: emailBody })
+		try {
+			const emailBody = req.body?.email
+			const passwordBody = req.body?.password
+			console.log(await User.find({}))
+			const user = await User.findOne({ email: emailBody })
 
-		if (!user) {
-			return res.status(401).json('Email không tồn tại!!!')
+			if (!user) {
+				return res.status(401).json('Email không tồn tại!!!')
+			}
+
+			const result = await bcrypt.compare(passwordBody, user.password)
+			if (!result) {
+				return res.status(403).json('Mật khẩu không chính xác')
+			}
+
+			const accessToken = jwt.sign({ email: emailBody }, process.env.ACCESS_SECRET_KEY, { expiresIn: '60s' })
+			const refreshToken = jwt.sign({ email: emailBody }, process.env.REFRESH_SECRET_KEY, { expiresIn: '60d' })
+
+			res.cookie('refreshToken', refreshToken, {
+				secure: true,
+				httpOnly: true,
+				sameSite: 'strict',
+			})
+			const { password, ...userObj } = user._doc
+			return res.json({ ...userObj, accessToken })
+		} catch (error) {
+			console.log(error)
+			res.status(500).json(error)
 		}
-
-		const result = await bcrypt.compare(passwordBody, user.password)
-		if (!result) {
-			return res.status(403).json('Mật khẩu không chính xác')
-		}
-
-		const accessToken = jwt.sign({ email: emailBody }, process.env.ACCESS_SECRET_KEY, { expiresIn: '60s' })
-		const refreshToken = jwt.sign({ email: emailBody }, process.env.REFRESH_SECRET_KEY, { expiresIn: '60d' })
-
-		res.cookie('refreshToken', refreshToken, {
-			secure: true,
-			httpOnly: true,
-			sameSite: 'strict',
-		})
-		const { password, ...userObj } = user._doc
-		return res.json({ ...userObj, accessToken })
 	}
 
 	// @route	[POST] /user/register
 	// @desc	Register
 	// @access	Private
 	async createUser(req, res) {
-		const userNew = req.body
-		const data = await User.findOne({ email: userNew.email })
-		const errors = []
+		try {
+			const userNew = req.body
+			const data = await User.findOne({ email: userNew.email })
+			const errors = []
 
-		Object.keys(userNew).forEach(field => {
-			if (!userNew[field].length)
+			Object.keys(userNew).forEach(field => {
+				if (!userNew[field].length)
+					addError(errors, {
+						field,
+						msg: `Vui lòng điền vào ${getField(field)}!!!`,
+					})
+			})
+
+			if (userNew.password.length < 6)
 				addError(errors, {
-					field,
-					msg: `Vui lòng điền vào ${getField(field)}!!!`,
+					field: 'password',
+					msg: 'Mật khâu tối thiểu 6 kí tự!!!',
 				})
-		})
+			if (userNew.password !== userNew.repassword)
+				addError(errors, {
+					field: 'repassword',
+					msg: 'Nhập lại mật khẩu không trùng khớp!!!',
+				})
+			if (!EMAIL_REG.test(userNew.email))
+				addError(errors, {
+					field: 'email',
+					msg: 'Định dạng email không chính xác!!!',
+				})
 
-		if (userNew.password.length < 6)
-			addError(errors, {
-				field: 'password',
-				msg: 'Mật khâu tối thiểu 6 kí tự!!!',
-			})
-		if (userNew.password !== userNew.repassword)
-			addError(errors, {
-				field: 'repassword',
-				msg: 'Nhập lại mật khẩu không trùng khớp!!!',
-			})
-		if (!EMAIL_REG.test(userNew.email))
-			addError(errors, {
-				field: 'email',
-				msg: 'Định dạng email không chính xác!!!',
-			})
+			if (data) {
+				addError(errors, { field: 'email', msg: 'Email đã tồn tại!!!' })
+				return res.json(errors)
+			} else {
+				const salt = await bcrypt.genSalt(10)
+				const hashPass = await bcrypt.hash(userNew.password, salt)
 
-		if (data) {
-			addError(errors, { field: 'email', msg: 'Email đã tồn tại!!!' })
-		} else {
-			const salt = await bcrypt.genSalt(10)
-			const hashPass = await bcrypt.hash(userNew.password, salt)
-
-			try {
-				if (errors.length) return res.json(errors)
-				await User.create({ ...userNew, password: hashPass })
-				return res.json(null)
-			} catch (err) {
-				addError(errors, { field: null, msg: 'Đã xảy ra lỗi!!!' })
+				try {
+					if (errors.length) return res.json(errors)
+					await User.create({ ...userNew, password: hashPass })
+					return res.json(null)
+				} catch (err) {
+					addError(errors, { field: null, msg: 'Đã xảy ra lỗi!!!' })
+					return res.json(err)
+				}
 			}
+		} catch (error) {
+			console.log(error)
+			res.status(500).json(error)
 		}
 	}
 
@@ -110,17 +122,22 @@ class UserController {
 	// @desc	Update info user
 	// @access	Private
 	async updateInfo(req, res) {
-		const user = req.user
-		const { name, avatar } = req.body
-		const data = await User.findByIdAndUpdate(
-			user._id,
-			{
-				avatar,
-				name,
-			},
-			{ new: true },
-		)
-		res.status(200).json(data)
+		try {
+			const user = req.user
+			const { name, avatar } = req.body
+			const data = await User.findByIdAndUpdate(
+				user._id,
+				{
+					avatar,
+					name,
+				},
+				{ new: true },
+			)
+			res.status(200).json(data)
+		} catch (error) {
+			console.log(error)
+			res.status(500).json(error)
+		}
 	}
 
 	// @route	[POST] /user/refresh
@@ -152,6 +169,7 @@ class UserController {
 				return res.json({ accessToken: newAccessToken })
 			}
 		} catch (error) {
+			console.log(error)
 			res.clearCookie('refreshToken')
 			res.json('Refresh token không chính xác, vui lòng đăng nhập lại!!!')
 		}
@@ -173,6 +191,7 @@ class UserController {
 			const user = await User.find({})
 			res.json({ user: user })
 		} catch (err) {
+			console.log(error)
 			res.json(err)
 		}
 	}
@@ -207,6 +226,7 @@ class UserController {
 			})
 			res.json({ user: user })
 		} catch (err) {
+			console.log(error)
 			res.json(err)
 		}
 	}
@@ -246,6 +266,7 @@ class UserController {
 			const { password, ...other } = user._doc
 			res.status(200).json(other)
 		} catch (err) {
+			console.log(error)
 			res.status(500).json(err)
 		}
 	}
