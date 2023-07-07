@@ -44,7 +44,7 @@ function GroupTab() {
                 className="mb-5"
                 id="search-chat"
                 name="search-chat"
-                placeholder="Tìm kiếm..."
+                placeholder="Tìm kiếm nhóm chat hiện có..."
                 setResultSearch={setResultSearch}
                 onSubmit={onSubmit}
             />

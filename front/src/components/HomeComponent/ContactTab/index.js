@@ -38,7 +38,7 @@ function ContactTab() {
                 className="mb-5"
                 id="search-chat"
                 name="search-chat"
-                placeholder="Tìm kiếm..."
+                placeholder="Tìm kiếm bạn bè..."
                 onSubmit={onSubmit}
                 setResultSearch={setResultSearch}
             />

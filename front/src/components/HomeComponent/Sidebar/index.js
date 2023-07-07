@@ -63,7 +63,8 @@ function Sidebar({ tab, setTab }) {
                                             dispatch(toggleSearchResult(false))
                                         }}
                                         key={index}
-                                        className={`option-sidebar tab mb-7 flex items-center justify-center select-none ${
+                                        id={'sidebar_' + item.key}
+                                        className={`option-sidebar tab mb-7 flex select-none items-center justify-center ${
                                             tab.includes(item.key)
                                                 ? 'active'
                                                 : ''
@@ -71,13 +72,13 @@ function Sidebar({ tab, setTab }) {
                                         title={item.title}
                                     >
                                         <Link to={item.link}>
-                                            <span className="p-2 flex option-icon dark:text-gray-100">
+                                            <span className="option-icon flex p-2 dark:text-gray-100">
                                                 {item.icon}
                                             </span>
                                         </Link>
                                         {item.key === 'notify' &&
                                             notify.notifyList.filter(
-                                                element =>
+                                                (element) =>
                                                     element.status ===
                                                         STATUS_NOTIFY.sent ||
                                                     !element.status

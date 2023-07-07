@@ -31,7 +31,7 @@ function ChatTab() {
                 className="mb-2 md:mb-5"
                 id="search-chat"
                 name="search-chat"
-                placeholder="Tìm kiếm..."
+                placeholder="Tìm kiếm cuộc trò chuyện..."
                 setResultSearch={setResultSearch}
                 onSubmit={onSubmit}
             />
